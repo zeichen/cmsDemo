@@ -13,7 +13,7 @@ var style = {
 };
 
 var boxSource = {
-    beginDrag: function(props) {
+    beginDrag: function (props) {
         return {
             name: props.name
         };
@@ -28,23 +28,25 @@ var Box = React.createClass({
         type: React.PropTypes.string.isRequired,
         isDropped: React.PropTypes.bool.isRequired
     },
-    render: function() {
+    render: function () {
         style.opacity = this.props.isDragging ? 0.4 : 1;
 
         return (
             this.props.connectDragSource(
                 <div style={style}>
-                {this.props.isDropped ?
-                  <s>{this.props.name}</s> :
-                  this.props.name
-                }
+                    {this.props.isDropped ?
+                        <s>{this.props.name}</s> :
+                        this.props.name
+                    }
                 </div>
             )
         );
     }
 });
 
-module.exports = ReactDnD.DragSource(function(props) { return props.type; }, boxSource, function (connect, monitor) {
+module.exports = ReactDnD.DragSource(function (props) {
+    return props.type;
+}, boxSource, function (connect, monitor) {
     return {
         connectDragSource: connect.dragSource(),
         isDragging: monitor.isDragging()

@@ -3,13 +3,13 @@ var React = require('react'),
     ItemTypes = require('./ItemTypes');
 
 var cardSource = {
-    beginDrag: function(props) {
-        return { id: props.id };
+    beginDrag: function (props) {
+        return {id: props.id};
     }
 };
 
 var cardTarget = {
-    hover: function(props, monitor) {
+    hover: function (props, monitor) {
         var draggedId = monitor.getItem().id;
 
         if (draggedId !== props.id) {
@@ -28,7 +28,7 @@ var Card = React.createClass({
         swapCards: React.PropTypes.func.isRequired
     },
 
-    render: function() {
+    render: function () {
         var style = {
             border: '1px dashed gray',
             padding: '0.5rem 1rem',
@@ -46,18 +46,18 @@ var Card = React.createClass({
 });
 
 var DragSourceDecorator = ReactDnD.DragSource(ItemTypes.CARD, cardSource,
-    function(connect, monitor) {
+    function (connect, monitor) {
         return {
             connectDragSource: connect.dragSource(),
             isDragging: monitor.isDragging()
         };
-});
+    });
 
 var DropTargetDecorator = ReactDnD.DropTarget(ItemTypes.CARD, cardTarget,
-    function(connect) {
+    function (connect) {
         return {
             connectDropTarget: connect.dropTarget()
         };
-});
+    });
 
 module.exports = DropTargetDecorator(DragSourceDecorator(Card));

@@ -8,7 +8,7 @@ var style = {
 };
 
 var Container = React.createClass({
-    getInitialState: function(){
+    getInitialState: function () {
         return {
             cards: [{
                 id: 1,
@@ -42,15 +42,19 @@ var Container = React.createClass({
         };
     },
 
-    compareCards: function(card1, card2){
+    compareCards: function (card1, card2) {
         return card1.order - card2.order;
     },
 
-    swapCards: function(id1, id2) {
+    swapCards: function (id1, id2) {
         var cards = this.state.cards;
 
-        var card1 = cards.filter(function(c){return c.id === id1})[0];
-        var card2 = cards.filter(function(c){return c.id === id2})[0];
+        var card1 = cards.filter(function (c) {
+            return c.id === id1
+        })[0];
+        var card2 = cards.filter(function (c) {
+            return c.id === id2
+        })[0];
         var card1Order = card1.order;
         card1.order = card2.order;
         card2.order = card1Order;
@@ -62,15 +66,15 @@ var Container = React.createClass({
         });
     },
 
-    render: function() {
+    render: function () {
         return (
             <div style={style}>
-                {this.state.cards.map(function(card) {
+                {this.state.cards.map(function (card) {
                     return (
                         <Card key={card.id}
-                                    id={card.id}
-                                    text={card.text}
-                                    swapCards={this.swapCards} />
+                              id={card.id}
+                              text={card.text}
+                              swapCards={this.swapCards}/>
                     );
                 }, this)}
             </div>

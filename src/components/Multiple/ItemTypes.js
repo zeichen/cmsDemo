@@ -1,6 +1,6 @@
 module.exports = {
-  COMPOSITION:'composition',
-  FOOD: 'food',
-  GLASS: 'glass',
-  PAPER: 'paper'
+    COMPOSITION: 'composition',
+    FOOD: 'food',
+    GLASS: 'glass',
+    PAPER: 'paper'
 };

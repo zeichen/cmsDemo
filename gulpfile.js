@@ -16,10 +16,13 @@ var config = {
 		html: './src/*.html',
 		js: './src/**/*.js',
 		images:'./src/images/*',
+		fonts: [
+			'node_modules/bootstrap/dist/font/*'
+		],
 		css: [
-		
+		    'node_modules/bootstrap/dist/css/bootstrap.min.css',
+      		'node_modules/bootstrap/dist/css/bootstrap-theme.min.css',
       		'node_modules/toastr/toastr.css'
-    	
     	],
 		dist: './dist',
 		mainJs: './src/main.js'
@@ -66,12 +69,12 @@ gulp.task('css', function() {
 		.pipe(gulp.dest(config.paths.dist + '/css'));
 });
 gulp.task('vendor', function() {
-	gulp.src('./vendor/*/*/*')
+	gulp.src('./vendor/*/*')
 		.pipe(gulp.dest(config.paths.dist + '/vendor'));
 });
 
 gulp.task('fonts', function() {
-	gulp.src('./src/fonts/*')
+	gulp.src(config.paths.fonts)
 		.pipe(gulp.dest(config.paths.dist + '/fonts'));
 });
 

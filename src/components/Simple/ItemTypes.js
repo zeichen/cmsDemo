@@ -1,5 +1,5 @@
- var ItemTypes = {
-   CARD: 'card'
- };
+var ItemTypes = {
+    CARD: 'card'
+};
 
- module.exports = ItemTypes;
+module.exports = ItemTypes;
