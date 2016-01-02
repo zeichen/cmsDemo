@@ -9,13 +9,11 @@ var Redirect = Router.Redirect;
 
 var routes =(
 <Route name ="app" path="/" handler ={require('./components/app')}>
-<DefaultRoute handler = {require('./components/homepage')}/>
-<Route name="authors" handler={require('./components/authors/authorPage')} />
-<Route name="addAuthor" path='author' handler={require('./components/authors/manageAuthorPage')} />
-<Route name="editAuthor" path='author/:id' handler={require('./components/authors/manageAuthorPage')} />
+<DefaultRoute handler = {require('./components/scheduler')}/>
+<Route name ="todo" handler = {require('./components/ListContainer')}/>
+<Route name ="scheduler" handler = {require('./components/scheduler')}/>
 <NotFoundRoute handler={require('./components/common/notFoundPage')} />
-<Redirect from ="about-us" to="authors" />
-<Redirect from ="author" to="authors" />
+
 </Route>
 );
 

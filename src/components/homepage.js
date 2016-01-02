@@ -9,12 +9,9 @@ var Home = React.createClass({
 		return (
 <div>
 <div className="jumbotron">
-<h1>
-AHHHHHHHH!!!
+<h1>內容推撥編輯</h1>
 
-</h1>
-
-<Link to ="authors" className="btn btn-primary btn-lg">AAAAHS</Link>
+<Link to ="app" className="btn btn-primary btn-lg">進入</Link>
 
 </div>
 </div>

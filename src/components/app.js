@@ -2,21 +2,20 @@
 //"use strict";
 
 $ = jQuery = require('jquery');
+var Aui = require('aui/externals');
+
 
 var React = require('react');
 var RouteHandler = require('react-router').RouteHandler;
 var Header=require('./common/header');
 
 var App = React.createClass({
-render:function(){
+
+   render:function(){
 	return (
-
 <div>
-
-<div className="container-fluid">
-<Header/>
+1.1?
 <RouteHandler/>
-</div>
 </div>
 		);
 }

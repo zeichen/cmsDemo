@@ -17,8 +17,7 @@ var config = {
 		js: './src/**/*.js',
 		images:'./src/images/*',
 		css: [
-      		'node_modules/bootstrap/dist/css/bootstrap.min.css',
-      		'node_modules/bootstrap/dist/css/bootstrap-theme.min.css',
+		
       		'node_modules/toastr/toastr.css'
     	
     	],
@@ -28,6 +27,9 @@ var config = {
 }
 
 //Start a local development server
+
+
+
 gulp.task('connect', function() {
 	connect.server({
 		root: ['dist'],
@@ -63,6 +65,15 @@ gulp.task('css', function() {
 		.pipe(concat('bundle.css'))
 		.pipe(gulp.dest(config.paths.dist + '/css'));
 });
+gulp.task('vendor', function() {
+	gulp.src('./vendor/*/*/*')
+		.pipe(gulp.dest(config.paths.dist + '/vendor'));
+});
+
+gulp.task('fonts', function() {
+	gulp.src('./src/fonts/*')
+		.pipe(gulp.dest(config.paths.dist + '/fonts'));
+});
 
 gulp.task('images', function() {
 	gulp.src(config.paths.images)
@@ -84,4 +95,4 @@ gulp.task('watch', function() {
 	gulp.watch(config.paths.js, ['js', 'lint']);
 });
 
-gulp.task('default', ['html', 'js', 'css','images', 'lint', 'open', 'watch']);
+gulp.task('default', ['html', 'js', 'css','vendor','images', 'lint', 'open', 'watch']);
