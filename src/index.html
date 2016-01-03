@@ -5,15 +5,18 @@
     <link rel="stylesheet" href="css/bundle.css"/>
     <link href="vendor/bootstrap/simple-sidebar.css" rel="stylesheet">
     <script src="vendor/codebase/dhtmlxscheduler.js" type="text/javascript" charset="utf-8"></script>
-    <link rel="stylesheet" href="vendor/codebase/dhtmlxscheduler.css" type="text/css" media="screen" title="no title"
+    <link rel="stylesheet" type="text/css" href="vendor/codebase/dhtmlxlist.css"/>
+    <script src="vendor/codebase/dhtmlxlist.js"></script>
+    <script src='vendor/codebase/ext/dhtmlxscheduler_outerdrag.js' type="text/javascript"></script>
+    <link rel="stylesheet" href="vendor/codebase/dhtmlxscheduler_flat.css" type="text/css" media="screen" title="no title"
           charset="utf-8">
 
     <style type="text/css">
 
         * {
-            /* -webkit-box-sizing: border-box; */
+            /* -webkit-box-sizing: border-box;  box-sizing: content-box;*/
             -moz-box-sizing: border-box;
-            box-sizing: content-box;
+           
         }
         #app {
             height: 100%;
@@ -21,6 +24,12 @@
         #scheduler_here {
             height: 100%;
             min-height: 600px;
+            box-sizing: content-box;
+        }
+        .dhx_cal_container {
+            /* -webkit-box-sizing: border-box; */
+            -moz-box-sizing: border-box;
+            box-sizing: content-box;
         }
     </style>
 </head>

@@ -74393,6 +74393,27 @@ $.fn.visibility.settings = {
 
 })( jQuery, window, document );
 },{}],327:[function(require,module,exports){
+var AppDispatcher = require('../dispatcher/AppDispatcher');
+var appConstants = require('../constants/appConstants');
+
+var compActions = {
+    addItem: function (item) {
+        AppDispatcher.handleAction({
+            actionType: appConstants.ADD_ITEM,
+            data: item
+        });
+    },
+    removeItem: function (index) {
+        AppDispatcher.handleAction({
+            actionType: appConstants.REMOVE_ITEM,
+            data: index
+        })
+    }
+};
+
+module.exports = compActions;
+
+},{"../constants/appConstants":343,"../dispatcher/AppDispatcher":344}],328:[function(require,module,exports){
 "use strict";
 
 var Dispatcher = require('../dispatcher/appDispatcher');
@@ -74410,28 +74431,7 @@ var InitailizeActions = {
 
 module.exports = InitailizeActions;
 
-},{"../constants/actionTypes":341,"../dispatcher/appDispatcher":344}],328:[function(require,module,exports){
-var AppDispatcher = require('../dispatcher/AppDispatcher');
-var appConstants = require('../constants/appConstants');
-
-var todoActions = {
-    addItem: function (item) {
-        AppDispatcher.handleAction({
-            actionType: appConstants.ADD_ITEM,
-            data: item
-        });
-    },
-    removeItem: function (index) {
-        AppDispatcher.handleAction({
-            actionType: appConstants.REMOVE_ITEM,
-            data: index
-        })
-    }
-};
-
-module.exports = todoActions;
-
-},{"../constants/appConstants":342,"../dispatcher/AppDispatcher":343}],329:[function(require,module,exports){
+},{"../constants/actionTypes":342,"../dispatcher/appDispatcher":345}],329:[function(require,module,exports){
 var React = require('react');
 
 var AddItem = React.createClass({displayName: "AddItem",
@@ -74456,6 +74456,86 @@ module.exports = AddItem;
 
 },{"react":323}],330:[function(require,module,exports){
 var React = require('react');
+var AddItem = require('./AddItem');
+var List = require('./List');
+var compStore = require('../stores/compStore');
+var compActions = require('../actions/compActions');
+
+var CompositionList = React.createClass({displayName: "CompositionList",
+    getInitialState: function () {
+        return {
+            list: compStore.getList()
+        }
+    },
+    componentDidMount: function () {
+        compStore.addChangeListener(this._onChange);
+
+            myList = new dhtmlXList({
+                container:"data_container1",
+                type:{
+                    template:"#Package# : #Version#<br/>#Maintainer#",
+                    height:40
+                },
+                drag:true
+            });
+            myList.attachEvent("onBeforeDrag",function(context,e){
+            //  context.html = "<div style='background-color:white; font-family:Tahoma; padding:10px;'>Drag "+context.source.length+" item(s)</div>";
+                return true;
+            });
+            myList.add({
+                Package:"drag this",
+                Version:"0.1",
+                Maintainer:"dhtmlx"
+            });
+            myList.add({
+                Package:"drag this",
+                Version:"0.2",
+                Maintainer:"dhtmlx"
+            });
+            myList.add({
+                Package:"drag this",
+                Version:"0.3",
+                Maintainer:"dhtmlx"
+            });
+            myList.add({
+                Package:"drag this",
+                Version:"0.4",
+                Maintainer:"dhtmlx"
+            });
+    },
+    componentWillUnmount: function () {
+        compStore.removeChangeListener(this._onChange);
+    },
+    handleAddItem: function (newItem) {
+        compActions.addItem(newItem);
+    },
+    handleRemoveItem: function (index) {
+        compActions.removeItem(index);
+    },
+    _onChange: function () {
+        this.setState({
+            list: compStore.getList()
+        })
+    },
+    render: function () {
+        return (
+            React.createElement("div", null, 
+React.createElement("table", {border: "0", cellspacing: "5", cellpadding: "5"}, 
+        React.createElement("tr", null, 
+            React.createElement("td", null, 
+                React.createElement("div", {id: "data_container1", style: {border: '1px solid #A4BED4', backgroundColor: 'white', width:250, height:800}})
+            )
+        )
+    )
+            )
+        )
+    }
+});
+
+module.exports = CompositionList;
+
+},{"../actions/compActions":327,"../stores/compStore":349,"./AddItem":329,"./List":331,"react":323}],331:[function(require,module,exports){
+var React = require('react');
 
 var List = React.createClass({displayName: "List",
     render: function () {
@@ -74477,8 +74557,8 @@ var List = React.createClass({displayName: "List",
                 cursor: "pointer",
                 color: "rgb(222, 79, 79)"
             },
-            todoItem: {
-             //   paddingLeft: 20,
+            compItem: {
+               paddingLeft: 20,
              //   fontSize: 17
             }
         };
@@ -74490,7 +74570,7 @@ var List = React.createClass({displayName: "List",
               style: styles.removeItem, 
               onClick: this.props.remove.bind(null, index)}
           ), 
-          React.createElement("span", {style: styles.todoItem}, 
+          React.createElement("span", {style: styles.compItem}, 
             item
           )
                 )
@@ -74506,44 +74586,43 @@ var List = React.createClass({displayName: "List",
 
 module.exports = List;
 
-},{"react":323}],331:[function(require,module,exports){
+},{"react":323}],332:[function(require,module,exports){
 var React = require('react');
 var AddItem = require('./AddItem');
 var List = require('./List');
-var todoStore = require('../stores/todoStore');
-var todoActions = require('../actions/todoActions');
+var compStore = require('../stores/compStore');
+var compActions = require('../actions/compActions');
 
 var ListContainer = React.createClass({displayName: "ListContainer",
     getInitialState: function () {
         return {
-            list: todoStore.getList()
+            list: compStore.getList()
         }
     },
     componentDidMount: function () {
-        todoStore.addChangeListener(this._onChange);
+        compStore.addChangeListener(this._onChange);
     },
     componentWillUnmount: function () {
-        todoStore.removeChangeListener(this._onChange);
+        compStore.removeChangeListener(this._onChange);
     },
     handleAddItem: function (newItem) {
-        todoActions.addItem(newItem);
+        compActions.addItem(newItem);
     },
     handleRemoveItem: function (index) {
-        todoActions.removeItem(index);
+        compActions.removeItem(index);
     },
     _onChange: function () {
         this.setState({
-            list: todoStore.getList()
+            list: compStore.getList()
         })
     },
     render: function () {
         return (
             React.createElement("div", {className: ""}, 
 
-                React.createElement("h3", {className: "text-center"}, " Todo List "), 
+                React.createElement("h3", {className: "text-center"}, " Composition List "), 
                 React.createElement(AddItem, {add: this.handleAddItem}), 
                 React.createElement(List, {items: this.state.list, remove: this.handleRemoveItem})
-
             )
         )
     }
@@ -74551,7 +74630,7 @@ var ListContainer = React.createClass({displayName: "ListContainer",
 
 module.exports = ListContainer;
 
-},{"../actions/todoActions":328,"../stores/todoStore":348,"./AddItem":329,"./List":330,"react":323}],332:[function(require,module,exports){
+},{"../actions/compActions":327,"../stores/compStore":349,"./AddItem":329,"./List":331,"react":323}],333:[function(require,module,exports){
 var React = require('react'),
     ReactDnD = require('react-dnd'),
     ItemTypes = require('./ItemTypes');
@@ -74616,7 +74695,7 @@ var DropTargetDecorator = ReactDnD.DropTarget(ItemTypes.CARD, cardTarget,
 
 module.exports = DropTargetDecorator(DragSourceDecorator(Card));
 
-},{"./ItemTypes":334,"react":323,"react-dnd":100}],333:[function(require,module,exports){
+},{"./ItemTypes":335,"react":323,"react-dnd":100}],334:[function(require,module,exports){
 var React = require('react'),
     HTML5Backend = require('react-dnd/modules/backends/HTML5'),
     Card = require("./Card"),
@@ -74703,14 +74782,14 @@ var Container = React.createClass({displayName: "Container",
 
 module.exports = ReactDnD.DragDropContext(HTML5Backend)(Container);
 
-},{"./Card":332,"react":323,"react-dnd":100,"react-dnd/modules/backends/HTML5":90}],334:[function(require,module,exports){
+},{"./Card":333,"react":323,"react-dnd":100,"react-dnd/modules/backends/HTML5":90}],335:[function(require,module,exports){
 var ItemTypes = {
     CARD: 'card'
 };
 
 module.exports = ItemTypes;
 
-},{}],335:[function(require,module,exports){
+},{}],336:[function(require,module,exports){
 "use strict";
 var React = require('react'),
     Container = require('./Container');
@@ -74736,7 +74815,7 @@ var SortableSimple = React.createClass({displayName: "SortableSimple",
 
 module.exports = SortableSimple;
 
-},{"./Container":333,"react":323}],336:[function(require,module,exports){
+},{"./Container":334,"react":323}],337:[function(require,module,exports){
 /*eslint-disable strict */
 //"use strict";
 
@@ -74762,7 +74841,7 @@ var App = React.createClass({displayName: "App",
 
 module.exports = App;
 
-},{"./common/header":337,"aui/externals":2,"jquery":30,"react":323,"react-router":136}],337:[function(require,module,exports){
+},{"./common/header":338,"aui/externals":2,"jquery":30,"react":323,"react-router":136}],338:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -74796,7 +74875,7 @@ module.exports = Header;
  </ul>
  */
 
-},{"react":323,"react-router":136}],338:[function(require,module,exports){
+},{"react":323,"react-router":136}],339:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -74814,7 +74893,7 @@ var NotFoundPage = React.createClass({displayName: "NotFoundPage",
 
 module.exports = NotFoundPage;
 
-},{"react":323,"react-router":136}],339:[function(require,module,exports){
+},{"react":323,"react-router":136}],340:[function(require,module,exports){
 "use strict";
 var React = require('react');
 var Router = require('react-router');
@@ -74844,10 +74923,16 @@ var Schedule = React.createClass({displayName: "Schedule",
     componentDidMount: function () {
         init();
         console.log(scheduler);
+        scheduler.attachEvent("onExternalDragIn", function(id, source, event){
+      //  var label = tree.getItemText(tree._dragged[0].id);
+       // scheduler.getEvent(id).text = label;
+         console.log(source);
+        return true;
+});
     },
     render: function () {
         return (
-            React.createElement("div", null, 
+            React.createElement("div", {className: "container-fluid"}, 
                 React.createElement("div", {id: "scheduler_here", className: "dhx_cal_container"}, 
 
                     React.createElement("div", {className: "dhx_cal_navline"}, 
@@ -74871,7 +74956,7 @@ var Schedule = React.createClass({displayName: "Schedule",
 
 module.exports = Schedule; 
 
-},{"../../stores/DataStore":347,"react":323,"react-router":136}],340:[function(require,module,exports){
+},{"../../stores/DataStore":348,"react":323,"react-router":136}],341:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -74881,7 +74966,8 @@ var Link = Router.Link;
 var DragSource = require('react-dnd').DragSource;
 var Simple = require('./Simple/index');
 var Schedule = require('./schedule/schedule');
-var ListContainer = require('./ListContainer')
+var ListContainer = require('./ListContainer');
+var CompositionList = require('./CompositionList');
 
 
 var Scheduler = React.createClass({displayName: "Scheduler",
@@ -74900,13 +74986,10 @@ var Scheduler = React.createClass({displayName: "Scheduler",
     render: function () {
         return (
             React.createElement("div", {id: "wrapper"}, 
+
                 React.createElement("div", {id: "sidebar-wrapper"}, 
-                    React.createElement("ul", {className: "sidebar-nav"}, 
-                        React.createElement("li", {className: "sidebar-brand"}, 
-                            React.createElement("a", {href: "#"})
-                        )
-                    ), 
-                    React.createElement(ListContainer, null)
+                 React.createElement(CompositionList, null)
+                    
                 ), 
                 React.createElement("div", {id: "page-content-wrapper"}, 
                     React.createElement("div", {className: "container-fluid"}, 
@@ -74931,7 +75014,7 @@ var Scheduler = React.createClass({displayName: "Scheduler",
 
 module.exports = Scheduler;    
 
-},{"../stores/DataStore":347,"./ListContainer":331,"./Simple/index":335,"./schedule/schedule":339,"react":323,"react-dnd":100,"react-router":136}],341:[function(require,module,exports){
+},{"../stores/DataStore":348,"./CompositionList":330,"./ListContainer":332,"./Simple/index":336,"./schedule/schedule":340,"react":323,"react-dnd":100,"react-router":136}],342:[function(require,module,exports){
 "use strict";
 //var keyMirror= require('react/lib/keyMirror');
 
@@ -74942,7 +75025,7 @@ module.exports = {
 
 };
 
-},{}],342:[function(require,module,exports){
+},{}],343:[function(require,module,exports){
 var appConstants = {
     ADD_ITEM: "ADD_ITEM",
     REMOVE_ITEM: "REMOVE_ITEM"
@@ -74950,20 +75033,7 @@ var appConstants = {
 
 module.exports = appConstants;
 
-},{}],343:[function(require,module,exports){
-var Dispatcher = require('flux').Dispatcher;
-var AppDispatcher = new Dispatcher();
-
-AppDispatcher.handleAction = function (action) {
-    this.dispatch({
-        source: 'VIEW_ACTION',
-        action: action
-    });
-};
-
-module.exports = AppDispatcher;
-
-},{"flux":26}],344:[function(require,module,exports){
+},{}],344:[function(require,module,exports){
 var Dispatcher = require('flux').Dispatcher;
 var AppDispatcher = new Dispatcher();
 
@@ -74977,6 +75047,19 @@ AppDispatcher.handleAction = function (action) {
 module.exports = AppDispatcher;
 
 },{"flux":26}],345:[function(require,module,exports){
+var Dispatcher = require('flux').Dispatcher;
+var AppDispatcher = new Dispatcher();
+
+AppDispatcher.handleAction = function (action) {
+    this.dispatch({
+        source: 'VIEW_ACTION',
+        action: action
+    });
+};
+
+module.exports = AppDispatcher;
+
+},{"flux":26}],346:[function(require,module,exports){
 //$ = jQuery = require('jquery');
 
 "use strict";
@@ -74992,7 +75075,7 @@ InitializeActions.initApp();
 Router.run(routes, function (Handler) {
     React.render(React.createElement(Handler, null), document.getElementById('app'));
 });
-},{"./actions/initializeActions":327,"./routes":346,"react":323,"react-router":136}],346:[function(require,module,exports){
+},{"./actions/initializeActions":328,"./routes":347,"react":323,"react-router":136}],347:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -75005,7 +75088,7 @@ var Redirect = Router.Redirect;
 var routes = (
     React.createElement(Route, {name: "app", path: "/", handler: require('./components/app')}, 
         React.createElement(DefaultRoute, {handler: require('./components/scheduler')}), 
-        React.createElement(Route, {name: "todo", handler: require('./components/ListContainer')}), 
+        React.createElement(Route, {name: "comp", handler: require('./components/ListContainer')}), 
         React.createElement(Route, {name: "scheduler", handler: require('./components/scheduler')}), 
         React.createElement(NotFoundRoute, {handler: require('./components/common/notFoundPage')})
 
@@ -75014,7 +75097,7 @@ var routes = (
 
 module.exports = routes;
 
-},{"./components/ListContainer":331,"./components/app":336,"./components/common/notFoundPage":338,"./components/scheduler":340,"react":323,"react-router":136}],347:[function(require,module,exports){
+},{"./components/ListContainer":332,"./components/app":337,"./components/common/notFoundPage":339,"./components/scheduler":341,"react":323,"react-router":136}],348:[function(require,module,exports){
 var Dispatcher = require('../dispatcher/appDispatcher');
 var ActionTypes = require('../constants/actionTypes');
 var EventEmitter = require('events').EventEmitter;
@@ -75062,7 +75145,7 @@ Dispatcher.register(function (action) {
 
 module.exports = DataStore;
 
-},{"../constants/actionTypes":341,"../dispatcher/appDispatcher":344,"events":3,"lodash":37,"object-assign":85}],348:[function(require,module,exports){
+},{"../constants/actionTypes":342,"../dispatcher/appDispatcher":345,"events":3,"lodash":37,"object-assign":85}],349:[function(require,module,exports){
 "use strict";
 var AppDispatcher = require('../dispatcher/AppDispatcher');
 var appConstants = require('../constants/appConstants');
@@ -75083,7 +75166,7 @@ var removeItem = function (index) {
     _store.list.splice(index, 1);
 }
 
-var todoStore = objectAssign({}, EventEmitter.prototype, {
+var compStore = objectAssign({}, EventEmitter.prototype, {
     addChangeListener: function (cb) {
         this.on(CHANGE_EVENT, cb);
     },
@@ -75100,17 +75183,17 @@ AppDispatcher.register(function (payload) {
     switch (action.actionType) {
         case appConstants.ADD_ITEM:
             addItem(action.data);
-            todoStore.emit(CHANGE_EVENT);
+            compStore.emit(CHANGE_EVENT);
             break;
         case appConstants.REMOVE_ITEM:
             removeItem(action.data);
-            todoStore.emit(CHANGE_EVENT);
+            compStore.emit(CHANGE_EVENT);
             break;
         default:
             return true;
     }
 });
 
-module.exports = todoStore;
+module.exports = compStore;
 
-},{"../constants/appConstants":342,"../dispatcher/AppDispatcher":343,"events":3,"react/lib/Object.assign":179}]},{},[345]);
+},{"../constants/appConstants":343,"../dispatcher/AppDispatcher":344,"events":3,"react/lib/Object.assign":179}]},{},[346]);

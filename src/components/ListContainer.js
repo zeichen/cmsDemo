@@ -1,40 +1,39 @@
 var React = require('react');
 var AddItem = require('./AddItem');
 var List = require('./List');
-var todoStore = require('../stores/todoStore');
-var todoActions = require('../actions/todoActions');
+var compStore = require('../stores/compStore');
+var compActions = require('../actions/compActions');
 
 var ListContainer = React.createClass({
     getInitialState: function () {
         return {
-            list: todoStore.getList()
+            list: compStore.getList()
         }
     },
     componentDidMount: function () {
-        todoStore.addChangeListener(this._onChange);
+        compStore.addChangeListener(this._onChange);
     },
     componentWillUnmount: function () {
-        todoStore.removeChangeListener(this._onChange);
+        compStore.removeChangeListener(this._onChange);
     },
     handleAddItem: function (newItem) {
-        todoActions.addItem(newItem);
+        compActions.addItem(newItem);
     },
     handleRemoveItem: function (index) {
-        todoActions.removeItem(index);
+        compActions.removeItem(index);
     },
     _onChange: function () {
         this.setState({
-            list: todoStore.getList()
+            list: compStore.getList()
         })
     },
     render: function () {
         return (
             <div className="">
 
-                <h3 className="text-center"> Todo List </h3>
+                <h3 className="text-center"> Composition List </h3>
                 <AddItem add={this.handleAddItem}/>
                 <List items={this.state.list} remove={this.handleRemoveItem}/>
-
             </div>
         )
     }

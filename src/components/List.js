@@ -20,8 +20,8 @@ var List = React.createClass({
                 cursor: "pointer",
                 color: "rgb(222, 79, 79)"
             },
-            todoItem: {
-             //   paddingLeft: 20,
+            compItem: {
+               paddingLeft: 20,
              //   fontSize: 17
             }
         };
@@ -33,7 +33,7 @@ var List = React.createClass({
               style={styles.removeItem}
               onClick={this.props.remove.bind(null, index)}>
           </span>
-          <span style={styles.todoItem}>
+          <span style={styles.compItem}>
             {item}
           </span>
                 </li>

@@ -27,10 +27,16 @@ var Schedule = React.createClass({
     componentDidMount: function () {
         init();
         console.log(scheduler);
+        scheduler.attachEvent("onExternalDragIn", function(id, source, event){
+      //  var label = tree.getItemText(tree._dragged[0].id);
+       // scheduler.getEvent(id).text = label;
+         console.log(source);
+        return true;
+});
     },
     render: function () {
         return (
-            <div>
+            <div className="container-fluid"> 
                 <div id="scheduler_here" className="dhx_cal_container">
 
                     <div className="dhx_cal_navline">

@@ -7,7 +7,8 @@ var Link = Router.Link;
 var DragSource = require('react-dnd').DragSource;
 var Simple = require('./Simple/index');
 var Schedule = require('./schedule/schedule');
-var ListContainer = require('./ListContainer')
+var ListContainer = require('./ListContainer');
+var CompositionList = require('./CompositionList');
 
 
 var Scheduler = React.createClass({
@@ -26,13 +27,10 @@ var Scheduler = React.createClass({
     render: function () {
         return (
             <div id="wrapper">
+
                 <div id="sidebar-wrapper">
-                    <ul className="sidebar-nav">
-                        <li className="sidebar-brand">
-                            <a href="#"></a>
-                        </li>
-                    </ul>
-                    <ListContainer />
+                 <CompositionList />
+                    
                 </div>
                 <div id="page-content-wrapper">
                     <div className="container-fluid">
