@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="css/bundle.css"/>
 <link href='vendor/calendar/fullcalendar.css' rel='stylesheet' />
 <link href='vendor/calendar/fullcalendar.print.css' rel='stylesheet' media='print' />
- <link href="dashboard.css" rel="stylesheet">
+ <link href="css/dashboard.css" rel="stylesheet">
     <style type="text/css">
 
         * {
@@ -15,7 +15,7 @@
         }
        
       
-          #canvas { border:1px solid black; background-color:#FFE; display:block; }
+          #canvas { border:1px solid black; background-color:#000; display:block; }
     </style>
 
 </head>
@@ -24,13 +24,64 @@
  
 <div id="app"></div>
 
-
-<script type="text/javascript" src="Utils.js"></script>
-<script type="text/javascript" src="vendor/lib/TransformTool.js"></script>
-<script type="text/javascript" src="TransformCanvasPictures.js"></script>
-
+<script src="vendor/lib/fabric.min.js"></script>
 <script src="scripts/bundle.js"></script>
+<script type="text/javascript">
+    (function ($, window) {
 
+    $.fn.contextMenu = function (settings) {
+
+        return this.each(function () {
+
+            // Open context menu
+            $(this).on("contextmenu", function (e) {
+                // return native menu if pressing control
+                if (e.ctrlKey) return;
+                
+                //open menu
+                var $menu = $(settings.menuSelector)
+                    .data("invokedOn", $(e.target))
+                    .show()
+                    .css({
+                        position: "absolute",
+                        left: getMenuPosition(e.clientX, 'width', 'scrollLeft'),
+                        top: getMenuPosition(e.clientY, 'height', 'scrollTop')
+                    })
+                    .off('click')
+                    .on('click', 'a', function (e) {
+                        $menu.hide();
+                
+                        var $invokedOn = $menu.data("invokedOn");
+                        var $selectedMenu = $(e.target);
+                        
+                        settings.menuSelected.call(this, $invokedOn, $selectedMenu);
+                    });
+                
+                return false;
+            });
+
+            //make sure menu closes on any click
+            $(document).click(function () {
+                $(settings.menuSelector).hide();
+            });
+        });
+        
+        function getMenuPosition(mouse, direction, scrollDir) {
+            var win = $(window)[direction](),
+                scroll = $(window)[scrollDir](),
+                menu = $(settings.menuSelector)[direction](),
+                position = mouse + scroll;
+                        
+            // opening menu would pass the side of the page
+            if (mouse + menu > win && menu < mouse) 
+                position -= menu;
+            
+            return position;
+        }    
+
+    };
+})(jQuery, window);
+</script>
  
 
 </script>

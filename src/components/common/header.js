@@ -17,7 +17,7 @@ var Header = React.createClass({
               <span className="icon-bar" />
               <span className="icon-bar" />
             </button>
-            <a className="navbar-brand" href="#">Project name</a>
+            <a className="navbar-brand" href="#">CMS DEMO</a>
           </div>
           <div className="navbar-collapse collapse">
             <ul className="nav navbar-nav navbar-right">
