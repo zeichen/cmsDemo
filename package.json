@@ -22,6 +22,7 @@
     "gulp-eslint": "^0.15.0",
     "gulp-open": "^1.0.0",
     "jquery": "^2.1.4",
+    "jquery-ui": "^1.10.5",
     "lodash": "^3.10.1",
     "object-assign": "^4.0.1",
     "react": "^0.14.5",

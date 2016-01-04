@@ -12,6 +12,7 @@ var routes = (
         <DefaultRoute handler={require('./components/scheduler')}/>
         <Route name="comp" handler={require('./components/ListContainer')}/>
         <Route name="scheduler" handler={require('./components/scheduler')}/>
+        <Route name="editor" handler={require('./components/CompositionEditor')}/>
         <NotFoundRoute handler={require('./components/common/notFoundPage')}/>
 
     </Route>

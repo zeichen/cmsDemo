@@ -1,6 +1,10 @@
 var React = require('react');
 
 var List = React.createClass({
+  omponentDidMount: function () {
+ 
+
+   },
     render: function () {
         var styles = {
             uList: {
@@ -12,22 +16,22 @@ var List = React.createClass({
              //   borderRadius: 5
             },
             removeItem: {
-                fontSize: 20,
-                float: "left",
-                position: "absolute",
-                top: 12,
-                left: 6,
-                cursor: "pointer",
-                color: "rgb(222, 79, 79)"
+             //   fontSize: 20,
+             //   float: "left",
+             //   position: "absolute",
+             //   top: 12,
+             //   left: 6,
+             //   cursor: "pointer",
+              //  color: "rgb(222, 79, 79)"
             },
             compItem: {
-               paddingLeft: 20,
+              // paddingLeft: 20,
              //   fontSize: 17
             }
         };
         var listItems = this.props.items.map(function (item, index) {
             return (
-                <li key={index} className="list-group-item" style={styles.listGroup}>
+                <li key={index} className="list-group-item external-event" style={styles.listGroup}>
           <span
               className="glyphicon glyphicon-remove"
               style={styles.removeItem}
@@ -40,7 +44,7 @@ var List = React.createClass({
             )
         }.bind(this));
         return (
-            <ul style={styles.uList}>
+            <ul style={styles.uList} className="nav nav-sidebar">
                 {listItems}
             </ul>
         )

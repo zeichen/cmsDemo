@@ -5,49 +5,34 @@ var Router = require('react-router');
 var dataStore = require('../stores/DataStore')
 var Link = Router.Link;
 var DragSource = require('react-dnd').DragSource;
-var Simple = require('./Simple/index');
 var Schedule = require('./schedule/schedule');
+var Calendar = require('./calendar/Calendar');
 var ListContainer = require('./ListContainer');
 var CompositionList = require('./CompositionList');
 
 
+
 var Scheduler = React.createClass({
-    mixins: [Aui.Mixin],
     getInitialState: function () {
         return {
             //  list: dataStore.getList()
         }
     },
     componentDidMount: function () {
-        $("#menu-toggle").click(function (e) {
-            e.preventDefault();
-            $("#wrapper").toggleClass("toggled");
-        });
+      
     },
     render: function () {
         return (
-            <div id="wrapper">
 
-                <div id="sidebar-wrapper">
-                 <CompositionList />
-                    
+             <div className="row">
+                <div className="col-sm-3 sidebar">
+                     <ListContainer />
                 </div>
-                <div id="page-content-wrapper">
-                    <div className="container-fluid">
-                        <div className="row">
-                            <div className="col-lg-12">
-
-                                <Schedule />
-                            </div>
-                        </div>
-                    </div>
+                <div className="col-sm-9 col-sm-offset-3 main">
+               
+                <Calendar />   
                 </div>
             </div>
-
-
-
-
-
 
         );
     }
