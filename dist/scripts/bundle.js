@@ -87963,7 +87963,6 @@ switch($(el).data('elObject').media){
 case 'img':
 var img = new Image();
 img.src=$(el).data('elObject').path;
-//var img = $(el).html();
 var imgInstance = new fabric.Image(img, {
   left: event.pageX-$('#canvas').offset().left,
   top: event.pageY-$('#canvas').offset().top,
@@ -87983,7 +87982,6 @@ var videoInstance = new fabric.Image(vid, {
 });
 canvas.add(videoInstance);
 videoInstance.getElement().play();
-//videoInstance.getElement()
 break;
 
 default:
@@ -88083,6 +88081,7 @@ canvas.remove(gridgroup);
 var jsonString=JSON.stringify(canvas);
 $('#canvasJSON').text(jsonString);
 canvas.add(gridgroup);
+canvas.sendToBack(gridgroup);
 
 });
 $('#loadJSON').click(function(event) {
@@ -88130,6 +88129,7 @@ React.createElement("div", {className: "btn-group", role: "group", "aria-label":
   React.createElement("button", {type: "button", className: "btn btn-default", id: "outputJSON"}, "outputJSON")
 )
 ), 
+React.createElement("p", null), 
 React.createElement("p", null, 
   React.createElement("button", {id: "bold"}, "Bold"), 
   React.createElement("button", {id: "italic"}, "Italic"), 
@@ -88140,7 +88140,9 @@ React.createElement("p", null,
   React.createElement("input", {type: "text", min: "5", max: "150", value: "40", id: "size"})
 ), 
                React.createElement("canvas", {id: "canvas", width: "720", height: "480", className: "canvascontext"}, "No Canvas."), 
+              
                React.createElement("figure", {className: "highlight", width: "720", height: "180"}, 
+                React.createElement("p", null, "CompositionJSON"), 
                React.createElement("textarea", {id: "canvasJSON"})
 
                )
@@ -88590,9 +88592,6 @@ var Header = React.createClass({displayName: "Header",
           ), 
           React.createElement("div", {className: "navbar-collapse collapse"}, 
             React.createElement("ul", {className: "nav navbar-nav navbar-right"}, 
-              React.createElement("li", null, 
-               React.createElement(Link, {to: "app"}, "進入")
-              ), 
               React.createElement("li", null, 
                React.createElement(Link, {to: "scheduler"}, "scheduler")
               ), 

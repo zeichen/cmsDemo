@@ -22,9 +22,6 @@ var Header = React.createClass({
           <div className="navbar-collapse collapse">
             <ul className="nav navbar-nav navbar-right">
               <li>
-               <Link to="app">進入</Link>
-              </li>
-              <li>
                <Link to="scheduler">scheduler</Link>
               </li>
               <li>

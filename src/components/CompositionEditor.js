@@ -101,7 +101,6 @@ switch($(el).data('elObject').media){
 case 'img':
 var img = new Image();
 img.src=$(el).data('elObject').path;
-//var img = $(el).html();
 var imgInstance = new fabric.Image(img, {
   left: event.pageX-$('#canvas').offset().left,
   top: event.pageY-$('#canvas').offset().top,
@@ -121,7 +120,6 @@ var videoInstance = new fabric.Image(vid, {
 });
 canvas.add(videoInstance);
 videoInstance.getElement().play();
-//videoInstance.getElement()
 break;
 
 default:
@@ -221,6 +219,7 @@ canvas.remove(gridgroup);
 var jsonString=JSON.stringify(canvas);
 $('#canvasJSON').text(jsonString);
 canvas.add(gridgroup);
+canvas.sendToBack(gridgroup);
 
 });
 $('#loadJSON').click(function(event) {
@@ -268,6 +267,7 @@ object.getElement().play();
   <button type="button" className="btn btn-default" id="outputJSON">outputJSON</button>
 </div>
 </div>
+<p></p>
 <p>
   <button id="bold">Bold</button>
   <button id="italic">Italic</button>
@@ -278,7 +278,9 @@ object.getElement().play();
   <input type="text" min="5" max="150" value="40" id="size"/>
 </p>
                <canvas id="canvas" width="720" height="480" className="canvascontext">No Canvas.</canvas>
+              
                <figure className="highlight" width="720" height="180">
+                <p>CompositionJSON</p>
                <textarea id="canvasJSON"></textarea>
 
                </figure>
