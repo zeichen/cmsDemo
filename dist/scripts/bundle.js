@@ -87818,7 +87818,7 @@ var compActions = {
 
 module.exports = compActions;
 
-},{"../constants/appConstants":316,"../dispatcher/AppDispatcher":317}],303:[function(require,module,exports){
+},{"../constants/appConstants":318,"../dispatcher/AppDispatcher":319}],303:[function(require,module,exports){
 "use strict";
 
 var Dispatcher = require('../dispatcher/appDispatcher');
@@ -87836,7 +87836,7 @@ var InitailizeActions = {
 
 module.exports = InitailizeActions;
 
-},{"../constants/actionTypes":315,"../dispatcher/appDispatcher":318}],304:[function(require,module,exports){
+},{"../constants/actionTypes":317,"../dispatcher/appDispatcher":320}],304:[function(require,module,exports){
 var React = require('react');
 
 var AddItem = React.createClass({displayName: "AddItem",
@@ -87864,10 +87864,21 @@ module.exports = AddItem;
 
 var React = require('react');
 var Router = require('react-router');
-var Link = Router.Link;
+var MaterialList=require('./MaterialList');
+var _=require('lodash');
 
+function removeCanvasObj(){
+_.forEach(window._canvas._objects, function(o, key) {
+window._canvas.remove(o);
+});
+if(window._canvas._objects.length!=0){
+ removeCanvasObj();
+}  
+}
 
 var CompositionEditor = React.createClass({displayName: "CompositionEditor",
+
+
     componentDidMount: function () {
      
     fabric.Object.prototype.set({
@@ -87879,76 +87890,260 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
 
 // initialize fabric canvas and assign to global windows object for debug
 var canvas = window._canvas = new fabric.Canvas('canvas');
+
 canvas.selectionColor = 'rgba(0,255,0,0.3)';
-var json = '{}'
+var json = '{}';
 canvas.loadFromJSON(json, canvas.renderAll.bind(canvas), function(o, object) {
     fabric.log(o, object);
 });
 
-                var grid = 60;
+fabric.util.requestAnimFrame(function render() {
+  canvas.renderAll();
+  fabric.util.requestAnimFrame(render);
+});
+
+fabric.util.addListener(document.getElementsByClassName('upper-canvas')[0], 'contextmenu', function(e) {
+    e.preventDefault();
+
+});
+
+                var grid = 15;
                 // create grid
+                var gridgroup = new fabric.Group([]);
                 for (var i = 0; i < (720/ grid); i++) {
-                  canvas.add(new fabric.Line([ i * grid, 0, i * grid, 480], { stroke: '#ccc', selectable: false }));
-                  canvas.add(new fabric.Line([ 0, i * grid, 720, i * grid], { stroke: '#ccc', selectable: false }))
+                  gridgroup.add(new fabric.Line([ i * grid, 0, i * grid, 480], { stroke: '#ccc', selectable: false }));
+                  gridgroup.add(new fabric.Line([ 0, i * grid, 720, i * grid], { stroke: '#ccc', selectable: false }))
                 }
+                canvas.add(gridgroup);
+                // canvas.remove(gridgroup);
  // add objects
-                var rect = new fabric.Rect({ 
-                  left: 100, 
-                  top: 100, 
-                  width: 50, 
-                  height: 50, 
-                  fill: '#faa', 
-                  originX: 'left', 
-                  originY: 'top',
-                  scaleY: 0.5,
-                  centeredRotation: true
-                });
-
-                var circle = new fabric.Circle({ 
-                  left: 300, 
-                  top: 300, 
-                  radius: 50, 
-                  fill: '#9f9', 
-                  originX: 'left', 
-                  originY: 'top',
-                  centeredRotation: true
-                });       
-
-                var rectGroup = new fabric.Group([rect, circle], {
-                                    width: 300,
-                                    height: 300,
-                                    left: 100,
-                                    top: 100,
-                                    angle: 0
-                                });
-                canvas.add(rectGroup);
+    context.init({preventDoubleContext: true});          
                 // snap to grid
                 canvas.on('object:moving', function(options) { 
                   options.target.set({
                     left: Math.round(options.target.left / grid) * grid,
                     top: Math.round(options.target.top / grid) * grid
-                  });
+                  });   
                 });
-                canvas.setActiveObject(circle);
-                canvas.renderAll();
 
+ canvas.on('object:selected', function(options) { 
+  context.attach('.canvascontext', [  
+    {text: 'delete',action:function(e){e.preventDefault();canvas.getActiveObject().remove();context.destroy('.canvascontext')}},
+    {text: 'bringToFront',action:function(e){e.preventDefault();canvas.bringToFront(canvas.getActiveObject())}},
+   {text: 'sendToBack',action:function(e){e.preventDefault();canvas.sendToBack(canvas.getActiveObject())}},
+   {text: 'bringForward',action:function(e){e.preventDefault();canvas.bringForward(canvas.getActiveObject())}},
+   {text: 'sendBackwards',action:function(e){e.preventDefault();canvas.sendBackwards(canvas.getActiveObject())}}
+  ]);
+                });
+
+ canvas.on('object:removed', function(options) {
+  console.log(options)
+try {
+     var el=options.target.getElement();
+    } catch (e) {
+        return false;
+    }
+ switch(el.nodeName.toUpperCase()){
+case "VIDEO":
+el.pause();
+el.src="";
+break;
+}
+
+   
+  });
+
+
+    $( "#canvas" ).droppable({
+      drop: function( event, ui ) {
+      console.log(event);   
+      var el=event.toElement;
+      console.log($(el).data('elObject'));
+switch($(el).data('elObject').media){
+case 'img':
+var img = new Image();
+img.src=$(el).data('elObject').path;
+//var img = $(el).html();
+var imgInstance = new fabric.Image(img, {
+  left: event.pageX-$('#canvas').offset().left,
+  top: event.pageY-$('#canvas').offset().top,
+  opacity: 0.85
+});
+canvas.add(imgInstance);
+break;
+case 'video':
+var vid = document.createElement('video');
+vid.src = $(el).data('elObject').path;
+vid.loop =true;
+vid.controls = true;
+var videoInstance = new fabric.Image(vid, {
+  left: event.pageX-$('#canvas').offset().left,
+  top: event.pageY-$('#canvas').offset().top,
+  width:300,height:200,
+});
+canvas.add(videoInstance);
+videoInstance.getElement().play();
+//videoInstance.getElement()
+break;
+
+default:
+break;
+
+}
+      }
+    });
+
+var canvases=[canvas];
+function setStyle(object, styleName, value) {
+  if (object.setSelectionStyles && object.isEditing) {
+    var style = { };
+    style[styleName] = value;
+    object.setSelectionStyles(style);
+  }
+  else {
+    object[styleName] = value;
+  }
+}
+function getStyle(object, styleName) {
+  return (object.getSelectionStyles && object.isEditing)
+    ? object.getSelectionStyles()[styleName]
+    : object[styleName];
+}
+
+function addHandler(id, fn, eventName) {
+  document.getElementById(id)[eventName || 'onclick'] = function() {
+    var el = this;
+    canvases.forEach(function(canvas, obj) {
+      if (obj = canvas.getActiveObject()) {
+        fn.call(el, obj);
+        canvas.renderAll();
+      }
+    });
+  };
+}
+
+addHandler('bold', function(obj) {
+  var isBold = getStyle(obj, 'fontWeight') === 'bold';
+  setStyle(obj, 'fontWeight', isBold ? '' : 'bold');
+});
+
+addHandler('italic', function() {
+  var isItalic = getStyle(obj, 'fontStyle') === 'italic';
+  setStyle(obj, 'fontStyle', isItalic ? '' : 'italic');
+});
+
+addHandler('underline', function(obj) {
+  var isUnderline = (getStyle(obj, 'textDecoration') || '').indexOf('underline') > -1;
+  setStyle(obj, 'textDecoration', isUnderline ? '' : 'underline');
+});
+
+addHandler('line-through', function(obj) {
+  var isLinethrough = (getStyle(obj, 'textDecoration') || '').indexOf('line-through') > -1;
+  setStyle(obj, 'textDecoration', isLinethrough ? '' : 'line-through');
+});
+
+addHandler('color', function(obj) {
+  setStyle(obj, 'fill', this.value);
+}, 'onchange');
+
+addHandler('bg-color', function(obj) {
+  setStyle(obj, 'textBackgroundColor', this.value);
+}, 'onchange');
+
+addHandler('size', function(obj) {
+  setStyle(obj, 'fontSize', parseInt(this.value, 10));
+}, 'onchange');
+
+
+$('#textbutton').click(function(event) {
+  /* Act on the event */
+  var iText = new fabric.IText('hello\nworld', {
+  left: 50,
+  top: 50,
+  fontFamily: 'Helvetica',
+  fill: '#fff',
+  lineHeight: 1.1,
+  styles: {
+    0: {
+      0: { textDecoration: 'underline', fontSize: 80 },
+      1: { textBackgroundColor: 'red' }
+    },
+    1: {
+      0: { textBackgroundColor: 'rgba(0,255,0,0.5)' },
+      4: { fontSize: 20 }
+    }
+  }
+});
+  canvas.add(iText);
+});
+
+$('#outputJSON').click(function(event) {
+  /* Act on the event */
+canvas.remove(gridgroup);
+var jsonString=JSON.stringify(canvas);
+$('#canvasJSON').text(jsonString);
+canvas.add(gridgroup);
+
+});
+$('#loadJSON').click(function(event) {
+
+removeCanvasObj();
+
+ var json = $('#canvasJSON').text();
+
+ try {
+        JSON.parse(json);
+    } catch (e) {
+        return false;
+    }
+canvas.loadFromJSON(json, canvas.renderAll.bind(canvas), function(o, object) {
+    fabric.log(o, object);
+    
+    if(object._element==null){
+      console.log(object);
+var vid = document.createElement('video');
+vid.src = object.src;
+vid.loop =true;
+vid.controls = true;
+object._element=vid;
+object._originalElement=vid;
+object.getElement().play();
+    }
+});
+
+
+ canvas.add(gridgroup);
+});
 
     },
     render: function () {
         return (
               React.createElement("div", {className: "row"}, 
-                React.createElement("div", {className: "col-sm-3 sidebar"}
-                  
+                React.createElement("div", {className: "col-sm-3 sidebar"}, 
+                  React.createElement(MaterialList, null)
                 ), 
                 React.createElement("div", {className: "col-sm-9 col-sm-offset-3 main"}, 
-             React.createElement("p", null), 
-                React.createElement("p", null), 
-                   React.createElement("p", null), 
-                      React.createElement("p", null), 
-                         React.createElement("p", null), 
-                            React.createElement("p", null), 
-               React.createElement("canvas", {id: "canvas", width: "720", height: "480"}, "No Canvas.")
-               
+React.createElement("div", {className: "btn-toolbar", role: "toolbar", "aria-label": "..."}, 
+React.createElement("div", {className: "btn-group", role: "group", "aria-label": "..."}, 
+  React.createElement("button", {type: "button", className: "btn btn-default", id: "textbutton"}, "text tool"), 
+  React.createElement("button", {type: "button", className: "btn btn-default", id: "loadJSON"}, "loadJSON"), 
+  React.createElement("button", {type: "button", className: "btn btn-default", id: "outputJSON"}, "outputJSON")
+)
+), 
+React.createElement("p", null, 
+  React.createElement("button", {id: "bold"}, "Bold"), 
+  React.createElement("button", {id: "italic"}, "Italic"), 
+  React.createElement("button", {id: "underline"}, "Underline"), 
+  React.createElement("button", {id: "line-through"}, "Line-through"), 
+  React.createElement("input", {type: "color", id: "color"}), 
+  React.createElement("input", {type: "color", id: "bg-color"}), 
+  React.createElement("input", {type: "text", min: "5", max: "150", value: "40", id: "size"})
+), 
+               React.createElement("canvas", {id: "canvas", width: "720", height: "480", className: "canvascontext"}, "No Canvas."), 
+               React.createElement("figure", {className: "highlight", width: "720", height: "180"}, 
+               React.createElement("textarea", {id: "canvasJSON"})
+
+               )
                 )
             )
         );
@@ -87957,7 +88152,7 @@ canvas.loadFromJSON(json, canvas.renderAll.bind(canvas), function(o, object) {
 
 module.exports = CompositionEditor;    
 
-},{"react":298,"react-router":111}],306:[function(require,module,exports){
+},{"./MaterialList":309,"lodash":36,"react":298,"react-router":111}],306:[function(require,module,exports){
 var React = require('react');
 var AddItem = require('./AddItem');
 var List = require('./List');
@@ -88037,54 +88232,32 @@ React.createElement("table", {border: "0", cellspacing: "5", cellpadding: "5"},
 
 module.exports = CompositionList;
 
-},{"../actions/compActions":302,"../stores/compStore":322,"./AddItem":304,"./List":307,"react":298}],307:[function(require,module,exports){
+},{"../actions/compActions":302,"../stores/compStore":324,"./AddItem":304,"./List":307,"react":298}],307:[function(require,module,exports){
 var React = require('react');
+var ListItem=require('./listItem');
 
 var List = React.createClass({displayName: "List",
-  omponentDidMount: function () {
- 
 
+  setEvent:function(){
+  //   console.log(this.getDOMNode()); 
+
+  },
+   componentDidMount: function () {
+       console.log(this.props.items)
    },
+   componentDidUpdate:function(){
+     
+     },
     render: function () {
-        var styles = {
-            uList: {
-              //  paddingLeft: 0,
-              //  listStyleType: "none"
-            },
-            listGroup: {
-             //   margin: '5px 0',
-             //   borderRadius: 5
-            },
-            removeItem: {
-             //   fontSize: 20,
-             //   float: "left",
-             //   position: "absolute",
-             //   top: 12,
-             //   left: 6,
-             //   cursor: "pointer",
-              //  color: "rgb(222, 79, 79)"
-            },
-            compItem: {
-              // paddingLeft: 20,
-             //   fontSize: 17
-            }
-        };
+     
         var listItems = this.props.items.map(function (item, index) {
-            return (
-                React.createElement("li", {key: index, className: "list-group-item external-event", style: styles.listGroup}, 
-          React.createElement("span", {
-              className: "glyphicon glyphicon-remove", 
-              style: styles.removeItem, 
-              onClick: this.props.remove.bind(null, index)}
-          ), 
-          React.createElement("span", {style: styles.compItem}, 
-            item
-          )
-                )
+          return (
+       React.createElement(ListItem, {key: index, item: item, remove: this.props.remove.bind(null, index)})
             )
+           
         }.bind(this));
         return (
-            React.createElement("ul", {style: styles.uList, className: "nav nav-sidebar"}, 
+            React.createElement("ul", {className: "nav nav-sidebar"}, 
                 listItems
             )
         )
@@ -88093,7 +88266,7 @@ var List = React.createClass({displayName: "List",
 
 module.exports = List;
 
-},{"react":298}],308:[function(require,module,exports){
+},{"./listItem":314,"react":298}],308:[function(require,module,exports){
 var React = require('react');
 var AddItem = require('./AddItem');
 var List = require('./List');
@@ -88102,20 +88275,8 @@ var compActions = require('../actions/compActions');
 
 var ListContainer = React.createClass({displayName: "ListContainer",
     setEvent:function(){
-        console.log( $('.external-event'));
-    $('.external-event').each(function() {
-       var eventObject = {
-        title: $.trim($(this).text()) // use the element's text as the event title
-      };
-
-      $(this).data('eventObject', eventObject);
-      $(this).draggable({
-        zIndex: 999,
-        revert: true,      // will cause the event to go back to its
-        revertDuration: 0  //  original position after the drag
-      });
-      
-    });
+        //console.log( $('.external-event'));
+   
     },
     getInitialState: function () {
         return {
@@ -88157,11 +88318,121 @@ var ListContainer = React.createClass({displayName: "ListContainer",
 
 module.exports = ListContainer;
 
-},{"../actions/compActions":302,"../stores/compStore":322,"./AddItem":304,"./List":307,"react":298}],309:[function(require,module,exports){
+},{"../actions/compActions":302,"../stores/compStore":324,"./AddItem":304,"./List":307,"react":298}],309:[function(require,module,exports){
+'use strict';
+var React = require('react');
+
+var tree = {
+  name: "assets",
+  childNodes: [
+      {name: "banner", childNodes: [
+      {name: "3.jpg",path:'assets/banner/3.jpg',media:'img'},
+      {name: "4.jpg",path:'assets/banner/4.jpg',media:'img'},
+      {name: "7.jpg",path:'assets/banner/7.jpg',media:'img'},
+      {name: "9.jpg",path:'assets/banner/9.jpg',media:'img'},
+      {name: "12.jpg",path:'assets/banner/12.jpg',media:'img'}
+      ]},
+       {name: "video", childNodes: [
+       {name: "0523a.mp4",path:'assets/video/0523a.mp4',media:'video'},
+       {name: "Sequence.mp4",path:'assets/video/Sequence.mp4',media:'video'},
+    ]}
+  ]
+};
+
+var TreeNode = React.createClass({displayName: "TreeNode",
+      setEvent:function(){
+      var el=this.getDOMNode().childNodes[0];
+      var elObject=this.props.node;
+      $(el).data('elObject',elObject);
+
+       if($(el).hasClass('draggable-el')){
+       $(el).draggable({
+       start: function( event, ui ) {
+       $(this).html('<'+elObject.media+' src="'+elObject.path+'"><'+elObject.media+'/>');
+       },
+       stop: function( event, ui ) {
+        $(this).html(elObject.name);
+       },
+        zIndex: 999,
+        revert: true,      // will cause the event to go back to its
+        revertDuration: 0  //  original position after the drag
+      });
+     }
+
+     var elObject=this.props.node
+  
+    },
+  getInitialState: function() {
+    return {
+      visible: true
+    };
+  },
+  componentDidMount: function () {
+    $(this).data('elObject',this.props.node);
+    this.setEvent();
+    },
+  render: function() {
+    var childNodes;
+    var classObj;
+
+    if (this.props.node.childNodes != null) {
+      childNodes = this.props.node.childNodes.map(function(node, index) {
+        return React.createElement("li", {key: index}, React.createElement(TreeNode, {node: node}))
+      });
+
+      classObj = {
+        togglable: true,
+        "togglable-down": this.state.visible,
+        "togglable-up": !this.state.visible
+      };
+    }else{
+     classObj = {
+        "draggable-el":true  
+      };
+    }
+
+    var style;
+    if (!this.state.visible) {
+      style = {display: "none"};
+    }
+
+    return (
+      React.createElement("div", null, 
+        React.createElement("div", {onClick: this.toggle, className: React.addons.classSet(classObj), elpath: this.props.node.path}, 
+          this.props.node.name
+        ), 
+        React.createElement("ul", {style: style}, 
+          childNodes
+        )
+      )
+    );
+  },
+  toggle: function() {
+    this.setState({visible: !this.state.visible});
+  }
+});
+
+
+var MaterialList = React.createClass({displayName: "MaterialList",
+	render: function() {
+		return (
+			React.createElement("div", null, 
+			React.createElement(TreeNode, {node: tree})
+		)
+		);
+	}
+});
+
+
+
+module.exports = MaterialList;
+
+},{"react":298}],310:[function(require,module,exports){
 /*eslint-disable strict */
 //"use strict";
 
 $ = jQuery = require('jquery');
+_=require('lodash');
 var Aui = require('aui/externals');
 var jqueryUI= require('jquery-ui');
 var React = require('react');
@@ -88192,7 +88463,7 @@ React.createElement("div", null,
 
 module.exports = App;
 
-},{"./common/header":311,"aui/externals":2,"jquery":31,"jquery-ui":30,"react":298,"react-router":111}],310:[function(require,module,exports){
+},{"./common/header":312,"aui/externals":2,"jquery":31,"jquery-ui":30,"lodash":36,"react":298,"react-router":111}],311:[function(require,module,exports){
 
 var React = require('react');
 
@@ -88295,7 +88566,7 @@ $.getScript("vendor/calendar/fullcalendar.js", function(){
 
 module.exports = Calendar;
 
-},{"react":298}],311:[function(require,module,exports){
+},{"react":298}],312:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -88352,7 +88623,7 @@ module.exports = Header;
  </ul>
  */
 
-},{"react":298,"react-router":111}],312:[function(require,module,exports){
+},{"react":298,"react-router":111}],313:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -88370,7 +88641,46 @@ var NotFoundPage = React.createClass({displayName: "NotFoundPage",
 
 module.exports = NotFoundPage;
 
-},{"react":298,"react-router":111}],313:[function(require,module,exports){
+},{"react":298,"react-router":111}],314:[function(require,module,exports){
+var React = require('react');
+
+var ListItem = React.createClass({displayName: "ListItem",
+
+  
+   componentDidMount: function () {
+     
+      var el=this.getDOMNode();
+    
+      var eventObject = {
+        title: this.props.item
+      };      
+      $(el).data('eventObject', eventObject);
+      $(el).draggable({
+        zIndex: 999,
+        revert: true,      
+        revertDuration: 0  
+      });
+   },
+   componentDidUpdate:function(){
+     },
+   render: function () {
+          return (
+                React.createElement("li", {className: "list-group-item external-event"}, 
+          React.createElement("span", {
+              className: "glyphicon glyphicon-remove", onClick: this.props.remove.bind(null, this.props.key)
+            }
+          ), 
+          React.createElement("span", null, 
+             this.props.item
+          )
+                )
+            )
+        }
+});
+
+module.exports = ListItem;
+
+},{"react":298}],315:[function(require,module,exports){
 "use strict";
 var React = require('react');
 var Router = require('react-router');
@@ -88433,7 +88743,7 @@ var Schedule = React.createClass({displayName: "Schedule",
 
 module.exports = Schedule; 
 
-},{"../../stores/DataStore":321,"react":298,"react-router":111}],314:[function(require,module,exports){
+},{"../../stores/DataStore":323,"react":298,"react-router":111}],316:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -88476,7 +88786,7 @@ var Scheduler = React.createClass({displayName: "Scheduler",
 
 module.exports = Scheduler;    
 
-},{"../stores/DataStore":321,"./CompositionList":306,"./ListContainer":308,"./calendar/Calendar":310,"./schedule/schedule":313,"react":298,"react-dnd":79,"react-router":111}],315:[function(require,module,exports){
+},{"../stores/DataStore":323,"./CompositionList":306,"./ListContainer":308,"./calendar/Calendar":311,"./schedule/schedule":315,"react":298,"react-dnd":79,"react-router":111}],317:[function(require,module,exports){
 "use strict";
 //var keyMirror= require('react/lib/keyMirror');
 
@@ -88487,7 +88797,7 @@ module.exports = {
 
 };
 
-},{}],316:[function(require,module,exports){
+},{}],318:[function(require,module,exports){
 var appConstants = {
     ADD_ITEM: "ADD_ITEM",
     REMOVE_ITEM: "REMOVE_ITEM"
@@ -88495,7 +88805,7 @@ var appConstants = {
 
 module.exports = appConstants;
 
-},{}],317:[function(require,module,exports){
+},{}],319:[function(require,module,exports){
 var Dispatcher = require('flux').Dispatcher;
 var AppDispatcher = new Dispatcher();
 
@@ -88508,7 +88818,7 @@ AppDispatcher.handleAction = function (action) {
 
 module.exports = AppDispatcher;
 
-},{"flux":26}],318:[function(require,module,exports){
+},{"flux":26}],320:[function(require,module,exports){
 var Dispatcher = require('flux').Dispatcher;
 var AppDispatcher = new Dispatcher();
 
@@ -88521,7 +88831,7 @@ AppDispatcher.handleAction = function (action) {
 
 module.exports = AppDispatcher;
 
-},{"flux":26}],319:[function(require,module,exports){
+},{"flux":26}],321:[function(require,module,exports){
 //$ = jQuery = require('jquery');
 
 "use strict";
@@ -88541,7 +88851,7 @@ Router.run(routes, function (Handler) {
 var initCalendar= function(){
 console.log('hi');
 }
-},{"./actions/initializeActions":303,"./routes":320,"react":298,"react-router":111}],320:[function(require,module,exports){
+},{"./actions/initializeActions":303,"./routes":322,"react":298,"react-router":111}],322:[function(require,module,exports){
 "use strict";
 
 var React = require('react');
@@ -88564,7 +88874,7 @@ var routes = (
 
 module.exports = routes;
 
-},{"./components/CompositionEditor":305,"./components/ListContainer":308,"./components/app":309,"./components/common/notFoundPage":312,"./components/scheduler":314,"react":298,"react-router":111}],321:[function(require,module,exports){
+},{"./components/CompositionEditor":305,"./components/ListContainer":308,"./components/app":310,"./components/common/notFoundPage":313,"./components/scheduler":316,"react":298,"react-router":111}],323:[function(require,module,exports){
 var Dispatcher = require('../dispatcher/appDispatcher');
 var ActionTypes = require('../constants/actionTypes');
 var EventEmitter = require('events').EventEmitter;
@@ -88624,7 +88934,7 @@ Dispatcher.register(function (action) {
 
 module.exports = DataStore;
 
-},{"../constants/actionTypes":315,"../dispatcher/appDispatcher":318,"events":3,"lodash":36,"object-assign":65}],322:[function(require,module,exports){
+},{"../constants/actionTypes":317,"../dispatcher/appDispatcher":320,"events":3,"lodash":36,"object-assign":65}],324:[function(require,module,exports){
 "use strict";
 var AppDispatcher = require('../dispatcher/AppDispatcher');
 var appConstants = require('../constants/appConstants');
@@ -88675,4 +88985,4 @@ AppDispatcher.register(function (payload) {
 
 module.exports = compStore;
 
-},{"../constants/appConstants":316,"../dispatcher/AppDispatcher":317,"events":3,"react/lib/Object.assign":154}]},{},[319]);
+},{"../constants/appConstants":318,"../dispatcher/AppDispatcher":319,"events":3,"react/lib/Object.assign":154}]},{},[321]);

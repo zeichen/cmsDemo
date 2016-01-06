@@ -2,6 +2,7 @@
 //"use strict";
 
 $ = jQuery = require('jquery');
+_=require('lodash');
 var Aui = require('aui/externals');
 var jqueryUI= require('jquery-ui');
 var React = require('react');

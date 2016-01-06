@@ -6,20 +6,8 @@ var compActions = require('../actions/compActions');
 
 var ListContainer = React.createClass({
     setEvent:function(){
-        console.log( $('.external-event'));
-    $('.external-event').each(function() {
-       var eventObject = {
-        title: $.trim($(this).text()) // use the element's text as the event title
-      };
-
-      $(this).data('eventObject', eventObject);
-      $(this).draggable({
-        zIndex: 999,
-        revert: true,      // will cause the event to go back to its
-        revertDuration: 0  //  original position after the drag
-      });
-      
-    });
+        //console.log( $('.external-event'));
+   
     },
     getInitialState: function () {
         return {
