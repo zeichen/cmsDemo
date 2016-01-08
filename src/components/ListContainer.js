@@ -5,9 +5,9 @@ var compStore = require('../stores/compStore');
 var compActions = require('../actions/compActions');
 
 var ListContainer = React.createClass({
-    setEvent:function(){
+    setEvent: function () {
         //console.log( $('.external-event'));
-   
+
     },
     getInitialState: function () {
         return {
@@ -16,7 +16,7 @@ var ListContainer = React.createClass({
     },
     componentDidMount: function () {
         compStore.addChangeListener(this._onChange);
-       this.setEvent();
+        this.setEvent();
     },
     componentWillUnmount: function () {
         compStore.removeChangeListener(this._onChange);
@@ -27,14 +27,14 @@ var ListContainer = React.createClass({
     handleRemoveItem: function (index) {
         compActions.removeItem(index);
     },
-    componentDidUpdate:function(){
-         this.setEvent();
-     },
+    componentDidUpdate: function () {
+        this.setEvent();
+    },
     _onChange: function () {
         this.setState({
             list: compStore.getList()
         });
-          this.setEvent();
+        this.setEvent();
     },
     render: function () {
         return (

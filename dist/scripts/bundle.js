@@ -87864,288 +87864,328 @@ module.exports = AddItem;
 
 var React = require('react');
 var Router = require('react-router');
-var MaterialList=require('./MaterialList');
-var _=require('lodash');
+var MaterialList = require('./MaterialList');
+var _ = require('lodash');
 
-function removeCanvasObj(){
-_.forEach(window._canvas._objects, function(o, key) {
-window._canvas.remove(o);
-});
-if(window._canvas._objects.length!=0){
- removeCanvasObj();
-}  
+function removeCanvasObj() {
+    _.forEach(window._canvas._objects, function (o, key) {
+        window._canvas.remove(o);
+    });
+    if (window._canvas._objects.length != 0) {
+        removeCanvasObj();
+    }
 }
 
 var CompositionEditor = React.createClass({displayName: "CompositionEditor",
 
-
+    componentWillUnmount:function(){
+        removeCanvasObj();
+    },
     componentDidMount: function () {
-     
-    fabric.Object.prototype.set({
-    transparentCorners: false,
-    cornerColor: 'rgba(102,153,255,0.5)',
-    cornerSize: 12,
-    padding: 5
-});
+        fabric.Object.prototype.set({
+            transparentCorners: false,
+            cornerColor: 'rgba(102,153,255,0.5)',
+            cornerSize: 12,
+            padding: 5
+        });
 
 // initialize fabric canvas and assign to global windows object for debug
-var canvas = window._canvas = new fabric.Canvas('canvas');
+        var canvas = window._canvas = new fabric.Canvas('canvas');
 
-canvas.selectionColor = 'rgba(0,255,0,0.3)';
-var json = '{}';
-canvas.loadFromJSON(json, canvas.renderAll.bind(canvas), function(o, object) {
-    fabric.log(o, object);
-});
+        canvas.selectionColor = 'rgba(0,255,0,0.3)';
+        var json = '{}';
+        canvas.loadFromJSON(json, canvas.renderAll.bind(canvas), function (o, object) {
+            fabric.log(o, object);
+        });
 
-fabric.util.requestAnimFrame(function render() {
-  canvas.renderAll();
-  fabric.util.requestAnimFrame(render);
-});
+        fabric.util.requestAnimFrame(function render() {
+            canvas.renderAll();
+            fabric.util.requestAnimFrame(render);
+        });
 
-fabric.util.addListener(document.getElementsByClassName('upper-canvas')[0], 'contextmenu', function(e) {
-    e.preventDefault();
+        fabric.util.addListener(document.getElementsByClassName('upper-canvas')[0], 'contextmenu', function (e) {
+            e.preventDefault();
 
-});
+        });
 
-                var grid = 15;
-                // create grid
-                var gridgroup = new fabric.Group([]);
-                for (var i = 0; i < (720/ grid); i++) {
-                  gridgroup.add(new fabric.Line([ i * grid, 0, i * grid, 480], { stroke: '#ccc', selectable: false }));
-                  gridgroup.add(new fabric.Line([ 0, i * grid, 720, i * grid], { stroke: '#ccc', selectable: false }))
+        var grid = 15;
+        // create grid
+        var gridgroup = new fabric.Group([]);
+        for (var i = 0; i < (720 / grid); i++) {
+            gridgroup.add(new fabric.Line([i * grid, 0, i * grid, 480], {stroke: '#ccc', selectable: false}));
+            gridgroup.add(new fabric.Line([0, i * grid, 720, i * grid], {stroke: '#ccc', selectable: false}))
+        }
+        canvas.add(gridgroup);
+        // canvas.remove(gridgroup);
+        // add objects
+        context.init({preventDoubleContext: true});
+        // snap to grid
+        canvas.on('object:moving', function (options) {
+            options.target.set({
+                left: Math.round(options.target.left / grid) * grid,
+                top: Math.round(options.target.top / grid) * grid
+            });
+        });
+
+        canvas.on('object:selected', function (options) {
+            context.attach('.canvascontext', [
+                {
+                    text: 'delete', action: function (e) {
+                    e.preventDefault();
+                    canvas.getActiveObject().remove();
+                    context.destroy('.canvascontext')
                 }
-                canvas.add(gridgroup);
-                // canvas.remove(gridgroup);
- // add objects
-    context.init({preventDoubleContext: true});          
-                // snap to grid
-                canvas.on('object:moving', function(options) { 
-                  options.target.set({
-                    left: Math.round(options.target.left / grid) * grid,
-                    top: Math.round(options.target.top / grid) * grid
-                  });   
+                },
+                {
+                    text: 'bringToFront', action: function (e) {
+                    e.preventDefault();
+                    canvas.bringToFront(canvas.getActiveObject())
+                }
+                },
+                {
+                    text: 'sendToBack', action: function (e) {
+                    e.preventDefault();
+                    canvas.sendToBack(canvas.getActiveObject())
+                }
+                },
+                {
+                    text: 'bringForward', action: function (e) {
+                    e.preventDefault();
+                    canvas.bringForward(canvas.getActiveObject())
+                }
+                },
+                {
+                    text: 'sendBackwards', action: function (e) {
+                    e.preventDefault();
+                    canvas.sendBackwards(canvas.getActiveObject())
+                }
+                }
+            ]);
+        });
+
+        canvas.on('object:removed', function (options) {
+            console.log(options)
+            try {
+                var el = options.target.getElement();
+            } catch (e) {
+                return false;
+            }
+            switch (el.nodeName.toUpperCase()) {
+                case "VIDEO":
+                    el.pause();
+                    el.src = "";
+                    break;
+            }
+
+
+        });
+
+
+        $("#canvas").droppable({
+            drop: function (event, ui) {
+                console.log(event);
+                var el = event.toElement;
+                console.log($(el).data('elObject'));
+                switch ($(el).data('elObject').media) {
+                    case 'img':
+                        var img = new Image();
+                        img.src = $(el).data('elObject').path;
+                        var imgInstance = new fabric.Image(img, {
+                            left: event.pageX - $('#canvas').offset().left,
+                            top: event.pageY - $('#canvas').offset().top,
+                            opacity: 0.85
+                        });
+                        canvas.add(imgInstance);
+                        break;
+                    case 'video':
+                        var vid = document.createElement('video');
+                        vid.src = $(el).data('elObject').path;
+                        vid.loop = true;
+                        vid.controls = true;
+                        var videoInstance = new fabric.Image(vid, {
+                            left: event.pageX - $('#canvas').offset().left,
+                            top: event.pageY - $('#canvas').offset().top,
+                            width: 300, height: 200,
+                        });
+                        canvas.add(videoInstance);
+                        videoInstance.getElement().play();
+                        break;
+
+                    default:
+                        break;
+
+                }
+            }
+        });
+
+        var canvases = [canvas];
+
+        function setStyle(object, styleName, value) {
+            if (object.setSelectionStyles && object.isEditing) {
+                var style = {};
+                style[styleName] = value;
+                object.setSelectionStyles(style);
+            }
+            else {
+                object[styleName] = value;
+            }
+        }
+
+        function getStyle(object, styleName) {
+            return (object.getSelectionStyles && object.isEditing)
+                ? object.getSelectionStyles()[styleName]
+                : object[styleName];
+        }
+
+        function addHandler(id, fn, eventName) {
+            document.getElementById(id)[eventName || 'onclick'] = function () {
+                var el = this;
+                canvases.forEach(function (canvas, obj) {
+                    if (obj = canvas.getActiveObject()) {
+                        fn.call(el, obj);
+                        canvas.renderAll();
+                    }
                 });
+            };
+        }
 
- canvas.on('object:selected', function(options) { 
-  context.attach('.canvascontext', [  
-    {text: 'delete',action:function(e){e.preventDefault();canvas.getActiveObject().remove();context.destroy('.canvascontext')}},
-    {text: 'bringToFront',action:function(e){e.preventDefault();canvas.bringToFront(canvas.getActiveObject())}},
-   {text: 'sendToBack',action:function(e){e.preventDefault();canvas.sendToBack(canvas.getActiveObject())}},
-   {text: 'bringForward',action:function(e){e.preventDefault();canvas.bringForward(canvas.getActiveObject())}},
-   {text: 'sendBackwards',action:function(e){e.preventDefault();canvas.sendBackwards(canvas.getActiveObject())}}
-  ]);
-                });
+        addHandler('bold', function (obj) {
+            var isBold = getStyle(obj, 'fontWeight') === 'bold';
+            setStyle(obj, 'fontWeight', isBold ? '' : 'bold');
+        });
 
- canvas.on('object:removed', function(options) {
-  console.log(options)
-try {
-     var el=options.target.getElement();
-    } catch (e) {
-        return false;
-    }
- switch(el.nodeName.toUpperCase()){
-case "VIDEO":
-el.pause();
-el.src="";
-break;
-}
+        addHandler('italic', function () {
+            var isItalic = getStyle(obj, 'fontStyle') === 'italic';
+            setStyle(obj, 'fontStyle', isItalic ? '' : 'italic');
+        });
 
-   
-  });
+        addHandler('underline', function (obj) {
+            var isUnderline = (getStyle(obj, 'textDecoration') || '').indexOf('underline') > -1;
+            setStyle(obj, 'textDecoration', isUnderline ? '' : 'underline');
+        });
 
+        addHandler('line-through', function (obj) {
+            var isLinethrough = (getStyle(obj, 'textDecoration') || '').indexOf('line-through') > -1;
+            setStyle(obj, 'textDecoration', isLinethrough ? '' : 'line-through');
+        });
 
-    $( "#canvas" ).droppable({
-      drop: function( event, ui ) {
-      console.log(event);   
-      var el=event.toElement;
-      console.log($(el).data('elObject'));
-switch($(el).data('elObject').media){
-case 'img':
-var img = new Image();
-img.src=$(el).data('elObject').path;
-var imgInstance = new fabric.Image(img, {
-  left: event.pageX-$('#canvas').offset().left,
-  top: event.pageY-$('#canvas').offset().top,
-  opacity: 0.85
-});
-canvas.add(imgInstance);
-break;
-case 'video':
-var vid = document.createElement('video');
-vid.src = $(el).data('elObject').path;
-vid.loop =true;
-vid.controls = true;
-var videoInstance = new fabric.Image(vid, {
-  left: event.pageX-$('#canvas').offset().left,
-  top: event.pageY-$('#canvas').offset().top,
-  width:300,height:200,
-});
-canvas.add(videoInstance);
-videoInstance.getElement().play();
-break;
+        addHandler('color', function (obj) {
+            setStyle(obj, 'fill', this.value);
+        }, 'onchange');
 
-default:
-break;
+        addHandler('bg-color', function (obj) {
+            setStyle(obj, 'textBackgroundColor', this.value);
+        }, 'onchange');
 
-}
-      }
-    });
-
-var canvases=[canvas];
-function setStyle(object, styleName, value) {
-  if (object.setSelectionStyles && object.isEditing) {
-    var style = { };
-    style[styleName] = value;
-    object.setSelectionStyles(style);
-  }
-  else {
-    object[styleName] = value;
-  }
-}
-function getStyle(object, styleName) {
-  return (object.getSelectionStyles && object.isEditing)
-    ? object.getSelectionStyles()[styleName]
-    : object[styleName];
-}
-
-function addHandler(id, fn, eventName) {
-  document.getElementById(id)[eventName || 'onclick'] = function() {
-    var el = this;
-    canvases.forEach(function(canvas, obj) {
-      if (obj = canvas.getActiveObject()) {
-        fn.call(el, obj);
-        canvas.renderAll();
-      }
-    });
-  };
-}
-
-addHandler('bold', function(obj) {
-  var isBold = getStyle(obj, 'fontWeight') === 'bold';
-  setStyle(obj, 'fontWeight', isBold ? '' : 'bold');
-});
-
-addHandler('italic', function() {
-  var isItalic = getStyle(obj, 'fontStyle') === 'italic';
-  setStyle(obj, 'fontStyle', isItalic ? '' : 'italic');
-});
-
-addHandler('underline', function(obj) {
-  var isUnderline = (getStyle(obj, 'textDecoration') || '').indexOf('underline') > -1;
-  setStyle(obj, 'textDecoration', isUnderline ? '' : 'underline');
-});
-
-addHandler('line-through', function(obj) {
-  var isLinethrough = (getStyle(obj, 'textDecoration') || '').indexOf('line-through') > -1;
-  setStyle(obj, 'textDecoration', isLinethrough ? '' : 'line-through');
-});
-
-addHandler('color', function(obj) {
-  setStyle(obj, 'fill', this.value);
-}, 'onchange');
-
-addHandler('bg-color', function(obj) {
-  setStyle(obj, 'textBackgroundColor', this.value);
-}, 'onchange');
-
-addHandler('size', function(obj) {
-  setStyle(obj, 'fontSize', parseInt(this.value, 10));
-}, 'onchange');
+        addHandler('size', function (obj) {
+            setStyle(obj, 'fontSize', parseInt(this.value, 10));
+        }, 'onchange');
 
 
-$('#textbutton').click(function(event) {
-  /* Act on the event */
-  var iText = new fabric.IText('hello\nworld', {
-  left: 50,
-  top: 50,
-  fontFamily: 'Helvetica',
-  fill: '#fff',
-  lineHeight: 1.1,
-  styles: {
-    0: {
-      0: { textDecoration: 'underline', fontSize: 80 },
-      1: { textBackgroundColor: 'red' }
-    },
-    1: {
-      0: { textBackgroundColor: 'rgba(0,255,0,0.5)' },
-      4: { fontSize: 20 }
-    }
-  }
-});
-  canvas.add(iText);
-});
+        $('#textbutton').click(function (event) {
+            /* Act on the event */
+            var iText = new fabric.IText('hello\nworld', {
+                left: 50,
+                top: 50,
+                fontFamily: 'Helvetica',
+                fill: '#fff',
+                lineHeight: 1.1,
+                styles: {
+                    0: {
+                        0: {textDecoration: 'underline', fontSize: 80},
+                        1: {textBackgroundColor: 'red'}
+                    },
+                    1: {
+                        0: {textBackgroundColor: 'rgba(0,255,0,0.5)'},
+                        4: {fontSize: 20}
+                    }
+                }
+            });
+            canvas.add(iText);
+        });
 
-$('#outputJSON').click(function(event) {
-  /* Act on the event */
-canvas.remove(gridgroup);
-var jsonString=JSON.stringify(canvas);
-$('#canvasJSON').text(jsonString);
-canvas.add(gridgroup);
-canvas.sendToBack(gridgroup);
+        $('#outputJSON').click(function (event) {
+            /* Act on the event */
+            canvas.remove(gridgroup);
+            var jsonString = JSON.stringify(canvas);
+            $('#canvasJSON').text(jsonString);
+            canvas.add(gridgroup);
+            canvas.sendToBack(gridgroup);
 
-});
-$('#loadJSON').click(function(event) {
+        });
+        $('#loadJSON').click(function (event) {
 
-removeCanvasObj();
+            removeCanvasObj();
 
- var json = $('#canvasJSON').text();
+            var json = $('#canvasJSON').text();
+            
+            try {
+                JSON.parse(json);
+            } catch (e) {
+               json= '{"objects":[],"background":""}' 
+            }
+            canvas.loadFromJSON(json,function(){
+                 canvas.add(gridgroup);
+                 canvas.sendToBack(gridgroup);
+                 canvas.renderAll.bind(canvas);
+            }
+                , function (o, object) {
+                fabric.log(o, object);
 
- try {
-        JSON.parse(json);
-    } catch (e) {
-        return false;
-    }
-canvas.loadFromJSON(json, canvas.renderAll.bind(canvas), function(o, object) {
-    fabric.log(o, object);
-    
-    if(object._element==null){
-      console.log(object);
-var vid = document.createElement('video');
-vid.src = object.src;
-vid.loop =true;
-vid.controls = true;
-object._element=vid;
-object._originalElement=vid;
-object.getElement().play();
-    }
-});
+                if (object.type == "image" && object._element == null) {
+                    console.log(object);
+                    var vid = document.createElement('video');
+                    vid.src = object.src;
+                    vid.loop = true;
+                    vid.controls = true;
+                    object._element = vid;
+                    object._originalElement = vid;
+                   object.getElement().play();
+                }
+            });
+        });
+        $('#setGrid').click(function(event) {
+          if(gridgroup.visible){
+                gridgroup.visible=true;
+          }else{
+                gridgroup.visible=false; 
+          }
 
-
- canvas.add(gridgroup);
-});
+        });
 
     },
     render: function () {
         return (
-              React.createElement("div", {className: "row"}, 
+            React.createElement("div", {className: "row"}, 
                 React.createElement("div", {className: "col-sm-3 sidebar"}, 
-                  React.createElement(MaterialList, null)
+                    React.createElement(MaterialList, null)
                 ), 
                 React.createElement("div", {className: "col-sm-9 col-sm-offset-3 main"}, 
-React.createElement("div", {className: "btn-toolbar", role: "toolbar", "aria-label": "..."}, 
-React.createElement("div", {className: "btn-group", role: "group", "aria-label": "..."}, 
-  React.createElement("button", {type: "button", className: "btn btn-default", id: "textbutton"}, "text tool"), 
-  React.createElement("button", {type: "button", className: "btn btn-default", id: "loadJSON"}, "loadJSON"), 
-  React.createElement("button", {type: "button", className: "btn btn-default", id: "outputJSON"}, "outputJSON")
-)
-), 
-React.createElement("p", null), 
-React.createElement("p", null, 
-  React.createElement("button", {id: "bold"}, "Bold"), 
-  React.createElement("button", {id: "italic"}, "Italic"), 
-  React.createElement("button", {id: "underline"}, "Underline"), 
-  React.createElement("button", {id: "line-through"}, "Line-through"), 
-  React.createElement("input", {type: "color", id: "color"}), 
-  React.createElement("input", {type: "color", id: "bg-color"}), 
-  React.createElement("input", {type: "text", min: "5", max: "150", value: "40", id: "size"})
-), 
-               React.createElement("canvas", {id: "canvas", width: "720", height: "480", className: "canvascontext"}, "No Canvas."), 
-              
-               React.createElement("figure", {className: "highlight", width: "720", height: "180"}, 
-                React.createElement("p", null, "CompositionJSON"), 
-               React.createElement("textarea", {id: "canvasJSON"})
+                    React.createElement("div", {className: "btn-toolbar", role: "toolbar", "aria-label": "..."}, 
+                        React.createElement("div", {className: "btn-group", role: "group", "aria-label": "..."}, 
+                            React.createElement("button", {type: "button", className: "btn btn-default", id: "textbutton"}, "text tool"), 
+                            React.createElement("button", {type: "button", className: "btn btn-default", id: "loadJSON"}, "loadJSON"), 
+                            React.createElement("button", {type: "button", className: "btn btn-default", id: "outputJSON"}, "outputJSON"), 
+                            React.createElement("button", {type: "button", className: "btn btn-default", id: "setGrid"}, "grid")
+                        )
+                    ), 
+                    React.createElement("p", null), 
+                    React.createElement("p", null, 
+                        React.createElement("button", {id: "bold"}, "Bold"), 
+                        React.createElement("button", {id: "italic"}, "Italic"), 
+                        React.createElement("button", {id: "underline"}, "Underline"), 
+                        React.createElement("button", {id: "line-through"}, "Line-through"), 
+                        React.createElement("input", {type: "color", id: "color"}), 
+                        React.createElement("input", {type: "color", id: "bg-color"}), 
+                        React.createElement("input", {type: "number", min: "5", max: "150", value: "40", id: "size", width: "40"})
+                    ), 
+                    React.createElement("canvas", {id: "canvas", width: "720", height: "480", className: "canvascontext"}, "No Canvas."), 
 
-               )
+                    React.createElement("figure", {className: "highlight", width: "720", height: "180"}, 
+                        React.createElement("p", null, "CompositionJSON"), 
+                        React.createElement("textarea", {id: "canvasJSON", placeholder: "{\"objects\":[],\"background\":\"\"}"})
+
+                    )
                 )
             )
         );
@@ -88170,38 +88210,38 @@ var CompositionList = React.createClass({displayName: "CompositionList",
     componentDidMount: function () {
         compStore.addChangeListener(this._onChange);
 
-            myList = new dhtmlXList({
-                container:"data_container1",
-                type:{
-                    template:"#Package# : #Version#<br/>#Maintainer#",
-                    height:40
-                },
-                drag:true
-            });
-            myList.attachEvent("onBeforeDrag",function(context,e){
+        myList = new dhtmlXList({
+            container: "data_container1",
+            type: {
+                template: "#Package# : #Version#<br/>#Maintainer#",
+                height: 40
+            },
+            drag: true
+        });
+        myList.attachEvent("onBeforeDrag", function (context, e) {
             //  context.html = "<div style='background-color:white; font-family:Tahoma; padding:10px;'>Drag "+context.source.length+" item(s)</div>";
-                return true;
-            });
-            myList.add({
-                Package:"drag this",
-                Version:"0.1",
-                Maintainer:"dhtmlx"
-            });
-            myList.add({
-                Package:"drag this",
-                Version:"0.2",
-                Maintainer:"dhtmlx"
-            });
-            myList.add({
-                Package:"drag this",
-                Version:"0.3",
-                Maintainer:"dhtmlx"
-            });
-            myList.add({
-                Package:"drag this",
-                Version:"0.4",
-                Maintainer:"dhtmlx"
-            });
+            return true;
+        });
+        myList.add({
+            Package: "drag this",
+            Version: "0.1",
+            Maintainer: "dhtmlx"
+        });
+        myList.add({
+            Package: "drag this",
+            Version: "0.2",
+            Maintainer: "dhtmlx"
+        });
+        myList.add({
+            Package: "drag this",
+            Version: "0.3",
+            Maintainer: "dhtmlx"
+        });
+        myList.add({
+            Package: "drag this",
+            Version: "0.4",
+            Maintainer: "dhtmlx"
+        });
     },
     componentWillUnmount: function () {
         compStore.removeChangeListener(this._onChange);
@@ -88220,13 +88260,14 @@ var CompositionList = React.createClass({displayName: "CompositionList",
     render: function () {
         return (
             React.createElement("div", null, 
-React.createElement("table", {border: "0", cellspacing: "5", cellpadding: "5"}, 
-        React.createElement("tr", null, 
-            React.createElement("td", null, 
-                React.createElement("div", {id: "data_container1", style: {border: '1px solid #A4BED4', backgroundColor: 'white', width:250, height:800}})
-            )
-        )
-    )
+                React.createElement("table", {border: "0", cellspacing: "5", cellpadding: "5"}, 
+                    React.createElement("tr", null, 
+                        React.createElement("td", null, 
+                            React.createElement("div", {id: "data_container1", 
+                                 style: {border: '1px solid #A4BED4', backgroundColor: 'white', width:250, height:800}})
+                        )
+                    )
+                )
             )
         )
     }
@@ -88236,30 +88277,30 @@ module.exports = CompositionList;
 
 },{"../actions/compActions":302,"../stores/compStore":324,"./AddItem":304,"./List":307,"react":298}],307:[function(require,module,exports){
 var React = require('react');
-var ListItem=require('./listItem');
+var ListItem = require('./listItem');
 
 var List = React.createClass({displayName: "List",
 
-  setEvent:function(){
-  //   console.log(this.getDOMNode()); 
+    setEvent: function () {
+        //   console.log(this.getDOMNode());
 
-  },
-   componentDidMount: function () {
-       console.log(this.props.items)
-   },
-   componentDidUpdate:function(){
-     
-     },
+    },
+    componentDidMount: function () {
+        console.log(this.props.items)
+    },
+    componentDidUpdate: function () {
+
+    },
     render: function () {
-     
+
         var listItems = this.props.items.map(function (item, index) {
-          return (
-       React.createElement(ListItem, {key: index, item: item, remove: this.props.remove.bind(null, index)})
+            return (
+                React.createElement(ListItem, {key: index, item: item, remove: this.props.remove.bind(null, index)})
             )
-           
+
         }.bind(this));
         return (
-            React.createElement("ul", {className: "nav nav-sidebar"}, 
+            React.createElement("ul", {className: "nav nav-sidebar external-events list-group"}, 
                 listItems
             )
         )
@@ -88276,9 +88317,9 @@ var compStore = require('../stores/compStore');
 var compActions = require('../actions/compActions');
 
 var ListContainer = React.createClass({displayName: "ListContainer",
-    setEvent:function(){
+    setEvent: function () {
         //console.log( $('.external-event'));
-   
+
     },
     getInitialState: function () {
         return {
@@ -88287,7 +88328,7 @@ var ListContainer = React.createClass({displayName: "ListContainer",
     },
     componentDidMount: function () {
         compStore.addChangeListener(this._onChange);
-       this.setEvent();
+        this.setEvent();
     },
     componentWillUnmount: function () {
         compStore.removeChangeListener(this._onChange);
@@ -88298,14 +88339,14 @@ var ListContainer = React.createClass({displayName: "ListContainer",
     handleRemoveItem: function (index) {
         compActions.removeItem(index);
     },
-    componentDidUpdate:function(){
-         this.setEvent();
-     },
+    componentDidUpdate: function () {
+        this.setEvent();
+    },
     _onChange: function () {
         this.setState({
             list: compStore.getList()
         });
-          this.setEvent();
+        this.setEvent();
     },
     render: function () {
         return (
@@ -88325,106 +88366,114 @@ module.exports = ListContainer;
 var React = require('react');
 
 var tree = {
-  name: "assets",
-  childNodes: [
-      {name: "banner", childNodes: [
-      {name: "3.jpg",path:'assets/banner/3.jpg',media:'img'},
-      {name: "4.jpg",path:'assets/banner/4.jpg',media:'img'},
-      {name: "7.jpg",path:'assets/banner/7.jpg',media:'img'},
-      {name: "9.jpg",path:'assets/banner/9.jpg',media:'img'},
-      {name: "12.jpg",path:'assets/banner/12.jpg',media:'img'}
-      ]},
-       {name: "video", childNodes: [
-       {name: "0523a.mp4",path:'assets/video/0523a.mp4',media:'video'},
-       {name: "Sequence.mp4",path:'assets/video/Sequence.mp4',media:'video'},
-    ]}
-  ]
+    name: "assets",
+    childNodes: [
+        {
+            name: "banner", childNodes: [
+            {name: "3.jpg", path: 'assets/banner/3.jpg', media: 'img'},
+            {name: "4.jpg", path: 'assets/banner/4.jpg', media: 'img'},
+            {name: "7.jpg", path: 'assets/banner/7.jpg', media: 'img'},
+            {name: "9.jpg", path: 'assets/banner/9.jpg', media: 'img'},
+            {name: "12.jpg", path: 'assets/banner/12.jpg', media: 'img'}
+        ]
+        },
+        {
+            name: "video", childNodes: [
+            {name: "0523a.mp4", path: 'assets/video/0523a.mp4', media: 'video'},
+            {name: "Sequence.mp4", path: 'assets/video/Sequence.mp4', media: 'video'},
+        ]
+        }
+    ]
 };
 
 var TreeNode = React.createClass({displayName: "TreeNode",
-      setEvent:function(){
-      var el=this.getDOMNode().childNodes[0];
-      var elObject=this.props.node;
-      $(el).data('elObject',elObject);
+    setEvent: function () {
+        var el = this.getDOMNode().childNodes[0];
+        var elObject = this.props.node;
+        $(el).data('elObject', elObject);
 
-       if($(el).hasClass('draggable-el')){
-       $(el).draggable({
-       start: function( event, ui ) {
-       $(this).html('<'+elObject.media+' src="'+elObject.path+'"><'+elObject.media+'/>');
-       },
-       stop: function( event, ui ) {
-        $(this).html(elObject.name);
-       },
-        zIndex: 999,
-        revert: true,      // will cause the event to go back to its
-        revertDuration: 0  //  original position after the drag
-      });
-     }
+        if ($(el).hasClass('draggable-el')) {
+            $(el).draggable({
+                start: function (event, ui) {
+                    $(this).html('<' + elObject.media + ' src="' + elObject.path + '"><' + elObject.media + '/>');
+                },
+                stop: function (event, ui) {
+                    $(this).html(elObject.name);
+                },
+                zIndex: 999,
+                revert: true,      // will cause the event to go back to its
+                revertDuration: 0  //  original position after the drag
+            });
+        }
 
-     var elObject=this.props.node
-  
+        var elObject = this.props.node
+
     },
-  getInitialState: function() {
-    return {
-      visible: true
-    };
-  },
-  componentDidMount: function () {
-    $(this).data('elObject',this.props.node);
-    this.setEvent();
+    getInitialState: function () {
+        return {
+            visible: true
+        };
     },
-  render: function() {
-    var childNodes;
-    var classObj;
+    componentDidMount: function () {
+        $(this).data('elObject', this.props.node);
+        this.setEvent();
+    },
+    render: function () {
+        var childNodes;
+        var classObj;
 
-    if (this.props.node.childNodes != null) {
-      childNodes = this.props.node.childNodes.map(function(node, index) {
-        return React.createElement("li", {key: index}, React.createElement(TreeNode, {node: node}))
-      });
+        if (this.props.node.childNodes != null) {
+            childNodes = this.props.node.childNodes.map(function (node, index) {
+                return React.createElement("li", {key: index}, React.createElement(TreeNode, {node: node}))
+            });
 
-      classObj = {
-        togglable: true,
-        "togglable-down": this.state.visible,
-        "togglable-up": !this.state.visible
-      };
-    }else{
-     classObj = {
-        "draggable-el":true  
-      };
+            classObj = {
+                togglable: true,
+                "togglable-down": this.state.visible,
+                "togglable-up": !this.state.visible,
+
+            };
+        } else {
+            classObj = {
+                "draggable-el": true
+
+            };
+        }
+
+        var style;
+        if (!this.state.visible) {
+            style = {display: "none"};
+        }
+
+        return (
+            React.createElement("div", null, 
+            
+                React.createElement("div", {onClick: this.toggle, className: React.addons.classSet(classObj), elpath: this.props.node.path}, 
+                    this.props.node.name
+                ), 
+                React.createElement("ul", {style: style}, 
+                    childNodes
+                )
+            )
+        );
+    },
+    toggle: function () {
+        this.setState({visible: !this.state.visible});
     }
-
-    var style;
-    if (!this.state.visible) {
-      style = {display: "none"};
-    }
-
-    return (
-      React.createElement("div", null, 
-        React.createElement("div", {onClick: this.toggle, className: React.addons.classSet(classObj), elpath: this.props.node.path}, 
-          this.props.node.name
-        ), 
-        React.createElement("ul", {style: style}, 
-          childNodes
-        )
-      )
-    );
-  },
-  toggle: function() {
-    this.setState({visible: !this.state.visible});
-  }
 });
 
 
 var MaterialList = React.createClass({displayName: "MaterialList",
-	render: function() {
-		return (
-			React.createElement("div", null, 
-			React.createElement(TreeNode, {node: tree})
-		)
-		);
-	}
-});
+    render: function () {
+        return (
+            React.createElement("div", null, 
 
+                React.createElement(TreeNode, {node: tree})
+               
+            )
+        );
+    }
+});
 
 
 module.exports = MaterialList;
@@ -88434,30 +88483,29 @@ module.exports = MaterialList;
 //"use strict";
 
 $ = jQuery = require('jquery');
-_=require('lodash');
+_ = require('lodash');
 var Aui = require('aui/externals');
-var jqueryUI= require('jquery-ui');
+var jqueryUI = require('jquery-ui');
 var React = require('react');
 var RouteHandler = require('react-router').RouteHandler;
 var Header = require('./common/header');
 
 
-
 var App = React.createClass({displayName: "App",
     componentWillMount: function () {
 
-  // $('body').append("<script src='vendor/calendar/fullcalendar.js'></script>");
+        // $('body').append("<script src='vendor/calendar/fullcalendar.js'></script>");
     },
     render: function () {
         return (
-React.createElement("div", null, 
-        React.createElement(Header, null), 
-        React.createElement("div", {className: "container-fluid"}, 
-         
-                React.createElement(RouteHandler, null)
-           
-             )
-     )
+            React.createElement("div", null, 
+                React.createElement(Header, null), 
+                React.createElement("div", {className: "container-fluid"}, 
+
+                    React.createElement(RouteHandler, null)
+
+                )
+            )
         );
     }
 
@@ -88466,7 +88514,6 @@ React.createElement("div", null,
 module.exports = App;
 
 },{"./common/header":312,"aui/externals":2,"jquery":31,"jquery-ui":30,"lodash":36,"react":298,"react-router":111}],311:[function(require,module,exports){
-
 var React = require('react');
 
 
@@ -88477,88 +88524,72 @@ var Calendar = React.createClass({displayName: "Calendar",
         var d = date.getDate();
         var m = date.getMonth();
         var y = date.getFullYear();
+         context.init({preventDoubleContext: true});
+        $.getScript("vendor/fullcalendar/fullcalendar.min.js", function () {
+   
 
-$.getScript("vendor/calendar/fullcalendar.js", function(){
-
-   var calendar =  $('#calendar').fullCalendar({
+        $('#calendar').fullCalendar({
             header: {
-                left: 'title',
-                center: 'agendaDay,agendaWeek,month',
-                right: 'prev,next today'
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
             },
+            defaultView:'agendaWeek',
             editable: true,
-            firstDay: 1, //  1(Monday) this can be changed to 0(Sunday) for the USA system
-            selectable: true,
-            defaultView: 'month',
-            
-            axisFormat: 'h:mm',
-            columnFormat: {
-                month: 'ddd',    // Mon
-                week: 'ddd d', // Mon 7
-                day: 'dddd M/d',  // Monday 9/7
-                agendaDay: 'dddd d'
-            },
-            titleFormat: {
-                month: 'MMMM yyyy', // September 2009
-                week: "MMMM yyyy", // September 2009
-                day: 'MMMM yyyy'                  // Tuesday, Sep 8, 2009
-            },
-            allDaySlot: false,
-            selectHelper: true,
-            select: function(start, end, allDay) {
-                var title = prompt('Event Title:');
-                if (title) {
-                    calendar.fullCalendar('renderEvent',
-                        {
-                            title: title,
-                            start: start,
-                            end: end,
-                            allDay: allDay
-                        },
-                        true // make the event "stick"
-                    );
-                }
-                calendar.fullCalendar('unselect');
-            },
-            droppable: true, // this allows things to be dropped onto the calendar !!!
-            drop: function(date, allDay) { // this function is called when something is dropped
-                console.log($(this).data)
-                // retrieve the dropped element's stored Event Object
-                var originalEventObject = $(this).data('eventObject');
-                
-                // we need to copy it, so that multiple events don't have a reference to the same object
-                var copiedEventObject = $.extend({}, originalEventObject);
-                
-                // assign it the date that was reported
-                copiedEventObject.start = date;
-                copiedEventObject.allDay = allDay;
-                copiedEventObject.className='important';
-                
-                // render the event on the calendar
-                // the last `true` argument determines if the event "sticks" (http://arshaw.com/fullcalendar/docs/event_rendering/renderEvent/)
-                $('#calendar').fullCalendar('renderEvent', copiedEventObject, true);
-                
+            droppable: true, // this allows things to be dropped onto the calendar
+            drop: function(event) {
+                console.log(event);
                 // is the "remove after drop" checkbox checked?
                 if ($('#drop-remove').is(':checked')) {
                     // if so, remove the element from the "Draggable Events" list
                     $(this).remove();
                 }
-                
             },
-            
-          
+        select: function(start, end, jsEvent, view, resource) {
+        console.log(
+        'select callback',
+        start.format(),
+        end.format(),
+        resource ? resource.id : '(no resource)'
+        );
+        },
+        eventDragStop: function(event,jsEvent) {
+    console.log('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
+    if( (300 <= jsEvent.pageX) & (jsEvent.pageX <= 500) & (130 <= jsEvent.pageY) & (jsEvent.pageY <= 170)){
+      alert('delete: '+ event.id);
+      $('#calendar').fullCalendar('removeEvents', event.id);
+    }
+},
+            eventRender: function (event, element) {
+        element.bind('mousedown', function (e) {
+            if (e.which == 3) {
+               console.log(event);
+                     context.attach('#calendar', [
+                {
+                    text: 'delete', action: function (e) {
+                   e.preventDefault();
+                   $('#calendar').fullCalendar('removeEvents', event._id);
+                }
+                }
+            ]);
+            }
+        });
+    }
         });
 
-});
+
+             
+
+        });
 
 
-
-   // console.log($('body').html());
+        // console.log($('body').html());
     },
     render: function () {
         return (
             React.createElement("div", null, 
-             React.createElement("div", {id: "calendar"})
+            
+                React.createElement("div", {id: "calendar"})
             )
 
         );
@@ -88574,38 +88605,35 @@ module.exports = Calendar;
 var React = require('react');
 var Router = require('react-router');
 var Link = Router.Link;
-
 var Header = React.createClass({displayName: "Header",
 
     render: function () {
         return (
-        React.createElement("div", {className: "navbar navbar-inverse navbar-fixed-top", role: "navigation"}, 
-        React.createElement("div", {className: "container-fluid"}, 
-          React.createElement("div", {className: "navbar-header"}, 
-            React.createElement("button", {type: "button", className: "navbar-toggle", "data-toggle": "collapse", "data-target": ".navbar-collapse"}, 
-              React.createElement("span", {className: "sr-only"}, "Toggle navigation"), 
-              React.createElement("span", {className: "icon-bar"}), 
-              React.createElement("span", {className: "icon-bar"}), 
-              React.createElement("span", {className: "icon-bar"})
-            ), 
-            React.createElement("a", {className: "navbar-brand", href: "#"}, "CMS DEMO")
-          ), 
-          React.createElement("div", {className: "navbar-collapse collapse"}, 
-            React.createElement("ul", {className: "nav navbar-nav navbar-right"}, 
-              React.createElement("li", null, 
-               React.createElement(Link, {to: "scheduler"}, "scheduler")
-              ), 
-              React.createElement("li", null, 
-                React.createElement(Link, {to: "editor"}, "editor")
-              )
-              
-            ), 
-            React.createElement("form", {className: "navbar-form navbar-right"}, 
-              React.createElement("input", {type: "text", className: "form-control", placeholder: "Search..."})
+            React.createElement("div", {className: "navbar navbar-inverse navbar-fixed-top", role: "navigation"}, 
+                React.createElement("div", {className: "container-fluid"}, 
+                    React.createElement("div", {className: "navbar-header"}, 
+                        React.createElement("button", {type: "button", className: "navbar-toggle", "data-toggle": "collapse", 
+                                "data-target": ".navbar-collapse"}, 
+                            React.createElement("span", {className: "sr-only"}, "Toggle navigation"), 
+                            React.createElement("span", {className: "icon-bar"}), 
+                            React.createElement("span", {className: "icon-bar"}), 
+                            React.createElement("span", {className: "icon-bar"})
+                        ), 
+                        React.createElement("a", {className: "navbar-brand", href: "#"}, "CMS DEMO")
+                    ), 
+                    React.createElement("div", {className: "navbar-collapse collapse"}, 
+                        React.createElement("ul", {className: "nav navbar-nav navbar-right"}, 
+                            React.createElement("li", null, 
+                                React.createElement(Link, {to: "scheduler"}, "scheduler")
+                            ), 
+                            React.createElement("li", null, 
+                                React.createElement(Link, {to: "editor"}, "editor")
+                            )
+
+                        )
+                    )
+                )
             )
-          )
-        )
-      )
         )
     }
 })
@@ -88645,36 +88673,49 @@ var React = require('react');
 
 var ListItem = React.createClass({displayName: "ListItem",
 
-  
-   componentDidMount: function () {
-     
-      var el=this.getDOMNode();
-    
-      var eventObject = {
-        title: this.props.item
-      };      
-      $(el).data('eventObject', eventObject);
-      $(el).draggable({
-        zIndex: 999,
-        revert: true,      
-        revertDuration: 0  
-      });
-   },
-   componentDidUpdate:function(){
-     },
-   render: function () {
-          return (
-                React.createElement("li", {className: "list-group-item external-event"}, 
+
+    componentDidMount: function () {
+
+        var el = this.getDOMNode();
+
+        var eventObject = {
+            title: this.props.item
+        };
+       
+
+        $(el).data('event', {
+                title: eventObject.title, // use the element's text as the event title
+                stick: true // maintain when user navigates (see docs on the renderEvent method)
+            });
+
+            // make the event draggable using jQuery UI
+           
+
+        $(el).draggable({
+     //     helper: 'clone',
+          opacity:0.7,
+        //  drag:function(){$('.sidebar').css("overflow-y", "fixed");},
+        //  stop:function(){$('.sidebar').css("overflow-y", "scroll");},            
+            zIndex: 999,
+            revert: true,
+            revertDuration: 0
+        });
+    },
+    componentDidUpdate: function () {
+    },
+    render: function () {
+        return (
+            React.createElement("li", {className: "list-group-item fc-event list-group-item"}, 
           React.createElement("span", {
               className: "glyphicon glyphicon-remove", onClick: this.props.remove.bind(null, this.props.key)
-            }
+          }
           ), 
           React.createElement("span", null, 
              this.props.item
           )
-                )
             )
-        }
+        )
+    }
 });
 
 module.exports = ListItem;
@@ -88709,12 +88750,12 @@ var Schedule = React.createClass({displayName: "Schedule",
     componentDidMount: function () {
         init();
         console.log(scheduler);
-        scheduler.attachEvent("onExternalDragIn", function(id, source, event){
-      //  var label = tree.getItemText(tree._dragged[0].id);
-       // scheduler.getEvent(id).text = label;
-         console.log(source);
-        return true;
-});
+        scheduler.attachEvent("onExternalDragIn", function (id, source, event) {
+            //  var label = tree.getItemText(tree._dragged[0].id);
+            // scheduler.getEvent(id).text = label;
+            console.log(source);
+            return true;
+        });
     },
     render: function () {
         return (
@@ -88756,7 +88797,6 @@ var ListContainer = require('./ListContainer');
 var CompositionList = require('./CompositionList');
 
 
-
 var Scheduler = React.createClass({displayName: "Scheduler",
     getInitialState: function () {
         return {
@@ -88764,18 +88804,17 @@ var Scheduler = React.createClass({displayName: "Scheduler",
         }
     },
     componentDidMount: function () {
-      
+
     },
     render: function () {
         return (
 
-             React.createElement("div", {className: "row"}, 
+            React.createElement("div", {className: "row"}, 
                 React.createElement("div", {className: "col-sm-3 sidebar"}, 
-                     React.createElement(ListContainer, null)
+                    React.createElement(ListContainer, null)
                 ), 
                 React.createElement("div", {className: "col-sm-9 col-sm-offset-3 main"}, 
-               
-                React.createElement(Calendar, null)
+                    React.createElement(Calendar, null)
                 )
             )
 
@@ -88847,8 +88886,8 @@ Router.run(routes, function (Handler) {
     React.render(React.createElement(Handler, null), document.getElementById('app'));
 });
 
-var initCalendar= function(){
-console.log('hi');
+var initCalendar = function () {
+    console.log('hi');
 }
 },{"./actions/initializeActions":303,"./routes":322,"react":298,"react-router":111}],322:[function(require,module,exports){
 "use strict";
@@ -88882,19 +88921,19 @@ var CHANGE_EVENT = 'change';
 var _ = require('lodash');
 
 var _items = [];
-var _events= [
-                {
-                    title: 'All Day Event',
-                    start: new Date()
-                },
-                {
-                    id: 999,
-                    title: 'Repeating Event',
-                    start: new Date(),
-                    allDay: false,
-                    className: 'info'
-                }
-            ]         
+var _events = [
+    {
+        title: 'All Day Event',
+        start: new Date()
+    },
+    {
+        id: 999,
+        title: 'Repeating Event',
+        start: new Date(),
+        allDay: false,
+        className: 'info'
+    }
+]
 var DataStore = assign({}, EventEmitter.prototype, {
     addChangeListener: function (callback) {
         this.on(CHANGE_EVENT, callback);

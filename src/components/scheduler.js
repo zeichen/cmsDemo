@@ -11,7 +11,6 @@ var ListContainer = require('./ListContainer');
 var CompositionList = require('./CompositionList');
 
 
-
 var Scheduler = React.createClass({
     getInitialState: function () {
         return {
@@ -19,18 +18,17 @@ var Scheduler = React.createClass({
         }
     },
     componentDidMount: function () {
-      
+
     },
     render: function () {
         return (
 
-             <div className="row">
+            <div className="row">
                 <div className="col-sm-3 sidebar">
-                     <ListContainer />
+                    <ListContainer />
                 </div>
                 <div className="col-sm-9 col-sm-offset-3 main">
-               
-                <Calendar />   
+                    <Calendar />
                 </div>
             </div>
 

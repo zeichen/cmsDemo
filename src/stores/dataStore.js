@@ -6,19 +6,19 @@ var CHANGE_EVENT = 'change';
 var _ = require('lodash');
 
 var _items = [];
-var _events= [
-                {
-                    title: 'All Day Event',
-                    start: new Date()
-                },
-                {
-                    id: 999,
-                    title: 'Repeating Event',
-                    start: new Date(),
-                    allDay: false,
-                    className: 'info'
-                }
-            ]         
+var _events = [
+    {
+        title: 'All Day Event',
+        start: new Date()
+    },
+    {
+        id: 999,
+        title: 'Repeating Event',
+        start: new Date(),
+        allDay: false,
+        className: 'info'
+    }
+]
 var DataStore = assign({}, EventEmitter.prototype, {
     addChangeListener: function (callback) {
         this.on(CHANGE_EVENT, callback);

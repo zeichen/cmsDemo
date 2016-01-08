@@ -2,73 +2,200 @@
 <html lang="en">
 <head>
     <title>CMSDEMO</title>
-    <link rel="stylesheet" href="css/bundle.css"/>
-<link href='vendor/calendar/fullcalendar.css' rel='stylesheet' />
-<link href='vendor/calendar/fullcalendar.print.css' rel='stylesheet' media='print' />
- <link href="css/dashboard.css" rel="stylesheet">
+   <link rel="stylesheet" href="css/bundle.css"/>
+    <link href='vendor/fullcalendar/fullcalendar.min.css' rel='stylesheet'/>
+   
+    <link href="css/dashboard.css" rel="stylesheet">
     <style type="text/css">
+        html,body{height:100%;}
+        #canvas {
+            border: 1px solid black;
+            background-color: #000;
+            display: block;
+        }
+        .draggable-el {
+            cursor: pointer;
+            max-width: 720px;
+        }
+        .draggable-el img {
+            max-width: 720px;
+        }
+        #contextMenu {
+            position: absolute;
+            display: none;
+        }
 
-        * {
-            /* -webkit-box-sizing: border-box;  box-sizing: content-box;*/
-            -moz-box-sizing: border-box;
-           
+        #canvasJSON {
+            width: 720px;
+
+        }
+        .list-group{
+         height: 100%;
+        margin: 5px;
+        }
+        .list-group-item{
+        margin: 5px;
         }
        
-      
-          #canvas { border:1px solid black; background-color:#000; display:block; }
-.draggable-el{
- cursor: pointer;
- max-width: 720px;
-}
-.draggable-el img{
- max-width: 720px;
-}
-
-#contextMenu {
-  position: absolute;
-  display:none;
-}
-#canvasJSON{
-width: 720px;
-
-}
-figure{
-margin-top: 20px;	
+        figure {
+            margin-top: 20px;
+        }
+        .sidebar{
+  overflow-y:fixed;
 }
     </style>
-}
-
-
-</head>
-
-<body>
-
   
+</head>
+<body class="fuelux">
 
 <div id="app"></div>
 
 
-<div id="contextMenu" class="dropdown clearfix">
-    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block;position:static;margin-bottom:5px;">
-      <li><a tabindex="-1" href="javascript: void(0)">DELETE SELECTED</a></li>
-      <li class="divider"></li>
-      <li><a tabindex="-1" href="javascript: void(0)">CLOSE</a></li>
-    </ul>
-  </div>
+
+
+<script src='vendor/lib/jquery.min.js'></script>
+<script src='vendor/lib/moment.min.js'></script>
 <script src="vendor/lib/fabric.min.js"></script>
 <script src="vendor/lib/context.js"></script>
+<script src="vendor/lib/bootstrap.min.js"></script>
 <script src="vendor/lib/fuelux.min.js"></script>
 <script src="scripts/bundle.js"></script>
 
 <script type="text/javascript">
+//preventing delete;
+$(document).unbind('keydown').bind('keydown', function (event) {
+    var doPrevent = false;
+    if (event.keyCode === 8) {
+        var d = event.srcElement || event.target;
+        if ((d.tagName.toUpperCase() === 'INPUT' && 
+             (
+                 d.type.toUpperCase() === 'TEXT' ||
+                 d.type.toUpperCase() === 'PASSWORD' || 
+                 d.type.toUpperCase() === 'FILE' || 
+                 d.type.toUpperCase() === 'SEARCH' || 
+                 d.type.toUpperCase() === 'EMAIL' || 
+                 d.type.toUpperCase() === 'NUMBER' || 
+                 d.type.toUpperCase() === 'DATE' )
+             ) || 
+             d.tagName.toUpperCase() === 'TEXTAREA') {
+            doPrevent = d.readOnly || d.disabled;
+        }
+        else {
+            doPrevent = true;
+        }
+    }
+
+    if (doPrevent) {
+        event.preventDefault();
+    }
+});
+
+/**
+ * $.disablescroll
+ * Author: Josh Harrison - aloof.co
+ *
+ * Disables scroll events from mousewheels, touchmoves and keypresses.
+ * Use while jQuery is animating the scroll position for a guaranteed super-smooth ride!
+ */
+
+;(function($) {
+
+    "use strict";
+
+    var instance, proto;
+
+    function UserScrollDisabler($container, options) {
+        // spacebar: 32, pageup: 33, pagedown: 34, end: 35, home: 36
+        // left: 37, up: 38, right: 39, down: 40
+        this.opts = $.extend({
+            handleKeys : true,
+            scrollEventKeys : [32, 33, 34, 35, 36, 37, 38, 39, 40]
+        }, options);
+
+        this.$container = $container;
+        this.$document = $(document);
+        this.lockToScrollPos = [0, 0];
+
+        this.disable();
+    }
+
+    proto = UserScrollDisabler.prototype;
+
+    proto.disable = function() {
+        var t = this;
+
+        t.lockToScrollPos = [
+            t.$container.scrollLeft(),
+            t.$container.scrollTop()
+        ];
+
+        t.$container.on(
+            "mousewheel.disablescroll DOMMouseScroll.disablescroll touchmove.disablescroll",
+            t._handleWheel
+        );
+
+        t.$container.on("scroll.disablescroll", function() {
+            t._handleScrollbar.call(t);
+        });
+
+        if(t.opts.handleKeys) {
+            t.$document.on("keydown.disablescroll", function(event) {
+                t._handleKeydown.call(t, event);
+            });
+        }
+    };
+
+    proto.undo = function() {
+        var t = this;
+        t.$container.off(".disablescroll");
+        if(t.opts.handleKeys) {
+            t.$document.off(".disablescroll");
+        }
+    };
+
+    proto._handleWheel = function(event) {
+        event.preventDefault();
+    };
+
+    proto._handleScrollbar = function() {
+        this.$container.scrollLeft(this.lockToScrollPos[0]);
+        this.$container.scrollTop(this.lockToScrollPos[1]);
+    };
+
+    proto._handleKeydown = function(event) {
+        for (var i = 0; i < this.opts.scrollEventKeys.length; i++) {
+            if (event.keyCode === this.opts.scrollEventKeys[i]) {
+                event.preventDefault();
+                return;
+            }
+        }
+    };
 
 
+    // Plugin wrapper for object
+    $.fn.disablescroll = function(method) {
 
+        // If calling for the first time, instantiate the object and save
+        // reference. The plugin can therefore only be instantiated once per
+        // page. You can pass options object in through the method parameter.
+        if( ! instance && (typeof method === "object" || ! method)) {
+            instance = new UserScrollDisabler(this, method);
+        }
+
+        // Instance already created, and a method is being explicitly called,
+        // e.g. .disablescroll('undo');
+        else if(instance && instance[method]) {
+            instance[method].call(instance);
+        }
+
+    };
+
+    // Global access
+    window.UserScrollDisabler = UserScrollDisabler;
+
+})(jQuery);
 
 </script>
- 
-
-
 
 
 </body>

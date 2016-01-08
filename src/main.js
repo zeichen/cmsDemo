@@ -14,7 +14,7 @@ Router.run(routes, function (Handler) {
     React.render(<Handler/>, document.getElementById('app'));
 });
 
-var initCalendar= function(){
-console.log('hi');
+var initCalendar = function () {
+    console.log('hi');
 }
 
