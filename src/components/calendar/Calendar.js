@@ -4,12 +4,9 @@ var React = require('react');
 var Calendar = React.createClass({
 
     componentDidMount: function () {
-        var date = new Date();
-        var d = date.getDate();
-        var m = date.getMonth();
-        var y = date.getFullYear();
-         context.init({preventDoubleContext: true});
-        $.getScript("vendor/fullcalendar/fullcalendar.min.js", function () {
+      
+          context.init({preventDoubleContext: true});
+   $.getScript("vendor/fullcalendar/fullcalendar.min.js", function () {
    
 
         $('#calendar').fullCalendar({
@@ -22,12 +19,6 @@ var Calendar = React.createClass({
             editable: true,
             droppable: true, // this allows things to be dropped onto the calendar
             drop: function(event) {
-                console.log(event);
-                // is the "remove after drop" checkbox checked?
-                if ($('#drop-remove').is(':checked')) {
-                    // if so, remove the element from the "Draggable Events" list
-                    $(this).remove();
-                }
             },
         select: function(start, end, jsEvent, view, resource) {
         console.log(
@@ -64,15 +55,14 @@ var Calendar = React.createClass({
 
              
 
-        });
+      });
 
 
-        // console.log($('body').html());
     },
     render: function () {
         return (
             <div>
-            
+
                 <div id='calendar'></div>
             </div>
 

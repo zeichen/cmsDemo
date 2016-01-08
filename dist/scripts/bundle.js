@@ -87908,17 +87908,18 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
 
         });
 
-        var grid = 15;
+     
+       
         // create grid
+           var grid = 15;
         var gridgroup = new fabric.Group([]);
         for (var i = 0; i < (720 / grid); i++) {
             gridgroup.add(new fabric.Line([i * grid, 0, i * grid, 480], {stroke: '#ccc', selectable: false}));
             gridgroup.add(new fabric.Line([0, i * grid, 720, i * grid], {stroke: '#ccc', selectable: false}))
         }
         canvas.add(gridgroup);
-        // canvas.remove(gridgroup);
-        // add objects
         context.init({preventDoubleContext: true});
+       
         // snap to grid
         canvas.on('object:moving', function (options) {
             options.target.set({
@@ -87976,8 +87977,6 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
                     el.src = "";
                     break;
             }
-
-
         });
 
 
@@ -88036,6 +88035,10 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
                 ? object.getSelectionStyles()[styleName]
                 : object[styleName];
         }
+
+
+/*-------------------UI-control--------------------------*/
+
 
         function addHandler(id, fn, eventName) {
             document.getElementById(id)[eventName || 'onclick'] = function () {
@@ -88368,7 +88371,7 @@ var React = require('react');
 var tree = {
     name: "assets",
     childNodes: [
-        {
+        {   
             name: "banner", childNodes: [
             {name: "3.jpg", path: 'assets/banner/3.jpg', media: 'img'},
             {name: "4.jpg", path: 'assets/banner/4.jpg', media: 'img'},
@@ -88401,8 +88404,8 @@ var TreeNode = React.createClass({displayName: "TreeNode",
                     $(this).html(elObject.name);
                 },
                 zIndex: 999,
-                revert: true,      // will cause the event to go back to its
-                revertDuration: 0  //  original position after the drag
+                revert: true,      
+                revertDuration: 0 
             });
         }
 
@@ -88447,7 +88450,7 @@ var TreeNode = React.createClass({displayName: "TreeNode",
 
         return (
             React.createElement("div", null, 
-            
+
                 React.createElement("div", {onClick: this.toggle, className: React.addons.classSet(classObj), elpath: this.props.node.path}, 
                     this.props.node.name
                 ), 
@@ -88462,7 +88465,6 @@ var TreeNode = React.createClass({displayName: "TreeNode",
     }
 });
 
-
 var MaterialList = React.createClass({displayName: "MaterialList",
     render: function () {
         return (
@@ -88474,8 +88476,6 @@ var MaterialList = React.createClass({displayName: "MaterialList",
         );
     }
 });
-
-
 module.exports = MaterialList;
 
 },{"react":298}],310:[function(require,module,exports){
@@ -88520,12 +88520,9 @@ var React = require('react');
 var Calendar = React.createClass({displayName: "Calendar",
 
     componentDidMount: function () {
-        var date = new Date();
-        var d = date.getDate();
-        var m = date.getMonth();
-        var y = date.getFullYear();
-         context.init({preventDoubleContext: true});
-        $.getScript("vendor/fullcalendar/fullcalendar.min.js", function () {
+      
+          context.init({preventDoubleContext: true});
+   $.getScript("vendor/fullcalendar/fullcalendar.min.js", function () {
    
 
         $('#calendar').fullCalendar({
@@ -88538,12 +88535,6 @@ var Calendar = React.createClass({displayName: "Calendar",
             editable: true,
             droppable: true, // this allows things to be dropped onto the calendar
             drop: function(event) {
-                console.log(event);
-                // is the "remove after drop" checkbox checked?
-                if ($('#drop-remove').is(':checked')) {
-                    // if so, remove the element from the "Draggable Events" list
-                    $(this).remove();
-                }
             },
         select: function(start, end, jsEvent, view, resource) {
         console.log(
@@ -88580,15 +88571,14 @@ var Calendar = React.createClass({displayName: "Calendar",
 
              
 
-        });
+      });
 
 
-        // console.log($('body').html());
     },
     render: function () {
         return (
             React.createElement("div", null, 
-            
+
                 React.createElement("div", {id: "calendar"})
             )
 

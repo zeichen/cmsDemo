@@ -46,17 +46,18 @@ var CompositionEditor = React.createClass({
 
         });
 
-        var grid = 15;
+     
+       
         // create grid
+           var grid = 15;
         var gridgroup = new fabric.Group([]);
         for (var i = 0; i < (720 / grid); i++) {
             gridgroup.add(new fabric.Line([i * grid, 0, i * grid, 480], {stroke: '#ccc', selectable: false}));
             gridgroup.add(new fabric.Line([0, i * grid, 720, i * grid], {stroke: '#ccc', selectable: false}))
         }
         canvas.add(gridgroup);
-        // canvas.remove(gridgroup);
-        // add objects
         context.init({preventDoubleContext: true});
+       
         // snap to grid
         canvas.on('object:moving', function (options) {
             options.target.set({
@@ -114,8 +115,6 @@ var CompositionEditor = React.createClass({
                     el.src = "";
                     break;
             }
-
-
         });
 
 
@@ -174,6 +173,10 @@ var CompositionEditor = React.createClass({
                 ? object.getSelectionStyles()[styleName]
                 : object[styleName];
         }
+
+
+/*-------------------UI-control--------------------------*/
+
 
         function addHandler(id, fn, eventName) {
             document.getElementById(id)[eventName || 'onclick'] = function () {

@@ -4,7 +4,7 @@ var React = require('react');
 var tree = {
     name: "assets",
     childNodes: [
-        {
+        {   
             name: "banner", childNodes: [
             {name: "3.jpg", path: 'assets/banner/3.jpg', media: 'img'},
             {name: "4.jpg", path: 'assets/banner/4.jpg', media: 'img'},
@@ -37,8 +37,8 @@ var TreeNode = React.createClass({
                     $(this).html(elObject.name);
                 },
                 zIndex: 999,
-                revert: true,      // will cause the event to go back to its
-                revertDuration: 0  //  original position after the drag
+                revert: true,      
+                revertDuration: 0 
             });
         }
 
@@ -83,7 +83,7 @@ var TreeNode = React.createClass({
 
         return (
             <div>
-            
+
                 <div onClick={this.toggle} className={React.addons.classSet(classObj)} elpath={this.props.node.path}>
                     {this.props.node.name}
                 </div>
@@ -98,7 +98,6 @@ var TreeNode = React.createClass({
     }
 });
 
-
 var MaterialList = React.createClass({
     render: function () {
         return (
@@ -110,8 +109,6 @@ var MaterialList = React.createClass({
         );
     }
 });
-
-
 module.exports = MaterialList;
 
 
