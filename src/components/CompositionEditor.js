@@ -4,7 +4,10 @@ var React = require('react');
 var Router = require('react-router');
 var MaterialList = require('./MaterialList');
 var _ = require('lodash');
+var compStore = require('../stores/compStore');
+var compActions= require('../actions/compActions');
 
+//helper for not clean up objects
 function removeCanvasObj() {
     _.forEach(window._canvas._objects, function (o, key) {
         window._canvas.remove(o);
@@ -14,12 +17,95 @@ function removeCanvasObj() {
     }
 }
 
+
+function loadJSONHelper(jsonString){
+    var json={};
+        try {
+               json=JSON.parse(jsonString);
+            } catch (e) {
+               json= '{"objects":[],"background":""}' 
+            }
+        window._canvas.loadFromJSON(json,function(){
+                  window._canvas.add(_gridgroup);
+                  window._canvas.sendToBack(_gridgroup);
+                  window._canvas.renderAll.bind(canvas);
+            }
+                , function (o, object) {
+                fabric.log(o, object);
+                if (object.type == "image" && object._element == null) {
+                 //   console.log(object);
+                    var vid = document.createElement('video');
+                    vid.src = object.src;
+                    vid.loop = true;
+                    vid.controls = true;
+                    object._element = vid;
+                    object._originalElement = vid;
+                    object.getElement().play();
+                }
+            });
+}
+var _gridgroup={};
 var CompositionEditor = React.createClass({
 
+    getInitialState: function () {
+
+        /*
+        console.log(this.props.query.id)
+        if(!this.props.query.id){
+        return {
+            //id:compStore.getList().length,
+            //composition:{title:'new',data:{},duration:3600}  
+         } 
+        }else{
+        return { 
+            id:this.props.query.id,
+            composition:_.find(compStore.getList(),'id',this.props.query.id)
+        }
+        }
+        */
+
+        //console.log(_.find(compStore.getList(),'id',this.props.query.id));
+
+        return{
+
+            composition:{
+                id:'',
+                title:'new',
+                data:'',
+                duration:3600
+            }
+          //  id:compStore.getList()[0].id,
+          //  composition:compStore.getList()[0]
+        }
+      
+    },
     componentWillUnmount:function(){
+        compStore.removeListener('compAdded',this._compAdded);
+        compStore.removeListener('compLoaded',this._compLoaded);
         removeCanvasObj();
     },
+    initCanvas:function(){
+
+
+    },
+    _compAdded:function(){
+       // console.log(compStore.getList()[compStore.getList().length-1]);
+        this.setState({
+           composition:compStore.getList()[compStore.getList().length-1]
+        })
+    },
+    _compLoaded:function(){
+         this.setState({
+           composition:compStore.getComposition()
+        })
+        //  console.log(compStore.getComposition());
+       //   console.log(this.state.composition);
+          loadJSONHelper(compStore.getComposition().data)
+    },
     componentDidMount: function () {
+        compStore.on('compAdded',this._compAdded);
+        compStore.on('compLoaded',this._compLoaded);
+        var _this=this;
         fabric.Object.prototype.set({
             transparentCorners: false,
             cornerColor: 'rgba(102,153,255,0.5)',
@@ -27,14 +113,21 @@ var CompositionEditor = React.createClass({
             padding: 5
         });
 
-// initialize fabric canvas and assign to global windows object for debug
+    // initialize fabric canvas and assign to global windows object for debug
         var canvas = window._canvas = new fabric.Canvas('canvas');
-
         canvas.selectionColor = 'rgba(0,255,0,0.3)';
         var json = '{}';
         canvas.loadFromJSON(json, canvas.renderAll.bind(canvas), function (o, object) {
             fabric.log(o, object);
         });
+
+        if(!this.props.query.id){
+        // compActions.addItem({ title:'new',data:'{}',duration:3600 });
+        }else{
+         compActions.getItem(this.props.query.id);  
+        }
+
+
 
         fabric.util.requestAnimFrame(function render() {
             canvas.renderAll();
@@ -49,8 +142,9 @@ var CompositionEditor = React.createClass({
      
        
         // create grid
-           var grid = 15;
+        var grid = 15;
         var gridgroup = new fabric.Group([]);
+        _gridgroup=gridgroup;
         for (var i = 0; i < (720 / grid); i++) {
             gridgroup.add(new fabric.Line([i * grid, 0, i * grid, 480], {stroke: '#ccc', selectable: false}));
             gridgroup.add(new fabric.Line([0, i * grid, 720, i * grid], {stroke: '#ccc', selectable: false}))
@@ -65,6 +159,19 @@ var CompositionEditor = React.createClass({
                 top: Math.round(options.target.top / grid) * grid
             });
         });
+
+
+    
+         var json=this.state.composition.data;
+            //removeCanvasObj();
+            //var json = $('#canvasJSON').text();
+            try {
+                JSON.parse(json);
+            } catch (e) {
+               json= '{"objects":[],"background":""}' 
+            }
+        
+
 
         canvas.on('object:selected', function (options) {
             context.attach('.canvascontext', [
@@ -84,19 +191,23 @@ var CompositionEditor = React.createClass({
                 {
                     text: 'sendToBack', action: function (e) {
                     e.preventDefault();
-                    canvas.sendToBack(canvas.getActiveObject())
+                    canvas.sendToBack(canvas.getActiveObject());
+                    canvas.sendToBack(gridgroup);
+
                 }
                 },
                 {
                     text: 'bringForward', action: function (e) {
                     e.preventDefault();
-                    canvas.bringForward(canvas.getActiveObject())
+                    canvas.bringForward(canvas.getActiveObject());
+
                 }
                 },
                 {
                     text: 'sendBackwards', action: function (e) {
                     e.preventDefault();
-                    canvas.sendBackwards(canvas.getActiveObject())
+                    canvas.sendBackwards(canvas.getActiveObject());
+                    canvas.sendToBack(gridgroup);
                 }
                 }
             ]);
@@ -148,7 +259,7 @@ var CompositionEditor = React.createClass({
                         videoInstance.getElement().play();
                         break;
 
-                    default:
+                        default:
                         break;
 
                 }
@@ -201,12 +312,12 @@ var CompositionEditor = React.createClass({
         });
 
         addHandler('underline', function (obj) {
-            var isUnderline = (getStyle(obj, 'textDecoration') || '').indexOf('underline') > -1;
+            var isUnderline = (getStyle(obj, 'textDecoration') || '').idOf('underline') > -1;
             setStyle(obj, 'textDecoration', isUnderline ? '' : 'underline');
         });
 
         addHandler('line-through', function (obj) {
-            var isLinethrough = (getStyle(obj, 'textDecoration') || '').indexOf('line-through') > -1;
+            var isLinethrough = (getStyle(obj, 'textDecoration') || '').idOf('line-through') > -1;
             setStyle(obj, 'textDecoration', isLinethrough ? '' : 'line-through');
         });
 
@@ -255,11 +366,8 @@ var CompositionEditor = React.createClass({
 
         });
         $('#loadJSON').click(function (event) {
-
             removeCanvasObj();
-
             var json = $('#canvasJSON').text();
-            
             try {
                 JSON.parse(json);
             } catch (e) {
@@ -272,7 +380,6 @@ var CompositionEditor = React.createClass({
             }
                 , function (o, object) {
                 fabric.log(o, object);
-
                 if (object.type == "image" && object._element == null) {
                     console.log(object);
                     var vid = document.createElement('video');
@@ -285,15 +392,40 @@ var CompositionEditor = React.createClass({
                 }
             });
         });
+    
+   
+        $('#Save').click(function(event) {
+            canvas.remove(gridgroup);
+            var jsonString = JSON.stringify(canvas);
+            $('#canvasJSON').text(jsonString);
+            canvas.add(gridgroup);
+            console.log(_this)
+            canvas.sendToBack(gridgroup);
+            if(_this.state.composition.id==''){ 
+               _this.state.composition.data=jsonString;
+              compActions.addItem(_this.state.composition)  
+            }else{
+              _this.state.composition.data=jsonString;
+              compActions.editItem(_this.state.composition)
+            }
+             
+           });
+
         $('#setGrid').click(function(event) {
           if(gridgroup.visible){
-                gridgroup.visible=true;
+                gridgroup.setVisible(false);
           }else{
-                gridgroup.visible=false; 
-          }
-
+                 gridgroup.setVisible(true); 
+          };
         });
 
+    },changeTitle:function(event){
+     this.state.composition.title=event.target.value;
+     this.setState({composition:this.state.composition})
+    },
+     changeduration:function(event){
+      this.state.composition.duration=event.target.value;
+      this.setState({composition:this.state.composition})
     },
     render: function () {
         return (
@@ -302,12 +434,20 @@ var CompositionEditor = React.createClass({
                     <MaterialList />
                 </div>
                 <div className="col-sm-9 col-sm-offset-3 main">
+
+                 composition title:  <input id="title" type='text' value={this.state.composition.title} onChange={this.changeTitle} />
+                  <p></p>
+                  duration(second):  <input id="duration" type='text' value={this.state.composition.duration} onChange={this.changeduration} />
+                  <p></p>
                     <div className="btn-toolbar" role="toolbar" aria-label="...">
-                        <div className="btn-group" role="group" aria-label="...">
+                            
+                            <div className="btn-group" role="group" aria-label="...">
                             <button type="button" className="btn btn-default" id="textbutton">text tool</button>
                             <button type="button" className="btn btn-default" id="loadJSON">loadJSON</button>
                             <button type="button" className="btn btn-default" id="outputJSON">outputJSON</button>
+                            <button type="button" className="btn btn-default" id="Save">Save</button>
                             <button type="button" className="btn btn-default" id="setGrid">grid</button>
+
                         </div>
                     </div>
                     <p></p>
@@ -324,7 +464,7 @@ var CompositionEditor = React.createClass({
 
                     <figure className="highlight" width="720" height="180">
                         <p>CompositionJSON</p>
-                        <textarea id="canvasJSON" placeholder='{"objects":[],"background":""}' ></textarea>
+                        <textarea id="canvasJSON" readonly="readonly" placeholder='{"objects":[],"background":""}' ></textarea>
 
                     </figure>
                 </div>

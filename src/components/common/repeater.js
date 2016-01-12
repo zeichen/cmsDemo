@@ -1,10 +1,5 @@
 var React=require('react');
-
-
-
-
-
-var class = React.createClass({
+var Repeater = React.createClass({
   render: function() {
     return (
     <div className="repeater" id="myRepeater">
@@ -106,5 +101,6 @@ var class = React.createClass({
   }
 });
 
+module.exports = Repeater;
 
 

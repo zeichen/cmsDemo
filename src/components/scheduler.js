@@ -5,16 +5,14 @@ var Router = require('react-router');
 var dataStore = require('../stores/DataStore')
 var Link = Router.Link;
 var DragSource = require('react-dnd').DragSource;
-var Schedule = require('./schedule/schedule');
 var Calendar = require('./calendar/Calendar');
-var ListContainer = require('./ListContainer');
-var CompositionList = require('./CompositionList');
+var ListContainer = require('./compositionList/ListContainer');
 
 
 var Scheduler = React.createClass({
     getInitialState: function () {
         return {
-            //  list: dataStore.getList()
+            //  list: dataStore.getList() 
         }
     },
     componentDidMount: function () {

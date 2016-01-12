@@ -1,26 +1,7 @@
 'use strict';
 var React = require('react');
+var materialStore=require('../stores/materialStore')
 
-var tree = {
-    name: "assets",
-    childNodes: [
-        {   
-            name: "banner", childNodes: [
-            {name: "3.jpg", path: 'assets/banner/3.jpg', media: 'img'},
-            {name: "4.jpg", path: 'assets/banner/4.jpg', media: 'img'},
-            {name: "7.jpg", path: 'assets/banner/7.jpg', media: 'img'},
-            {name: "9.jpg", path: 'assets/banner/9.jpg', media: 'img'},
-            {name: "12.jpg", path: 'assets/banner/12.jpg', media: 'img'}
-        ]
-        },
-        {
-            name: "video", childNodes: [
-            {name: "0523a.mp4", path: 'assets/video/0523a.mp4', media: 'video'},
-            {name: "Sequence.mp4", path: 'assets/video/Sequence.mp4', media: 'video'},
-        ]
-        }
-    ]
-};
 
 var TreeNode = React.createClass({
     setEvent: function () {
@@ -78,7 +59,7 @@ var TreeNode = React.createClass({
 
         var style;
         if (!this.state.visible) {
-            style = {display: "none"};
+            style = {display: "none"};    
         }
 
         return (
@@ -99,11 +80,27 @@ var TreeNode = React.createClass({
 });
 
 var MaterialList = React.createClass({
+     getInitialState: function () {
+        return {
+            tree:materialStore.getList()
+        };
+    },
+    componentDidMount: function () {
+        materialStore.addChangeListener(this._onChange);
+    },
+    componentWillUnmount: function () {
+        materialStore.removeChangeListener(this._onChange);
+    },
+    _onChange:function(){
+      this.setState({
+            list: materialStore.getList()
+        });
+    },
     render: function () {
         return (
             <div>
 
-                <TreeNode node={tree}/>
+                <TreeNode node={this.state.tree}/>
                
             </div>
         );

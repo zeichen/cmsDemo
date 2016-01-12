@@ -2,8 +2,11 @@
 //var keyMirror= require('react/lib/keyMirror');
 
 module.exports = {
-    INITAILIZE: null,
-    CREATE_AUTHOR: null
+    INITAILIZE: 'initialize',
+   EVENT_CREATE:'createEvent',
+   EVENT_UPDATE:'updateEvent',
+   EVENT_DELETE:'deleteEvent'
+
 
 
 };
