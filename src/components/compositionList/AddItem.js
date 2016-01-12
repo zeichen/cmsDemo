@@ -5,9 +5,9 @@ var AddItem = React.createClass({
     handleSubmit: function (e) {
         if (e.keyCode === 13) {
             var newItem = {
-                title:this.refs.newItem.getDOMNode().value,
-                data:'{}',
-                duration:3600
+                title: this.refs.newItem.getDOMNode().value,
+                data: '{}',
+                duration: 3600
             }
             this.refs.newItem.getDOMNode().value = '';
             this.props.add(newItem);

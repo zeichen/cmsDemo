@@ -6,8 +6,8 @@ var compActions = require('../../actions/compActions');
 var Router = require('react-router');
 
 var ListContainer = React.createClass({
-    mixins:[
-    Router.Navigation
+    mixins: [
+        Router.Navigation
     ],
 
     setEvent: function () {
@@ -19,30 +19,30 @@ var ListContainer = React.createClass({
         }
     },
     componentDidMount: function () {
-        compStore.on('API_CompositionList',this._loadList)
+        compStore.on('API_CompositionList', this._loadList)
         compStore.addChangeListener(this._onChange);
         compActions.getList();
         this.setEvent();
 
     },
-    _loadList:function(){
-        this.setState({list:compStore.getList()});
+    _loadList: function () {
+        this.setState({list: compStore.getList()});
     },
     componentWillUnmount: function () {
-        compStore.removeListener('API_CompositionList',this._loadList)
+        compStore.removeListener('API_CompositionList', this._loadList)
         compStore.removeChangeListener(this._onChange);
     },
     handleAddItem: function (newItem) {
         compActions.addItem(newItem);
     },
     handleRemoveItem: function (_id) {
-       
+
         compActions.removeItem(_id);
     },
     handleEditItem: function (_id) {
         //compActions.removeItem(index);
-    console.log(_id)
-    this.transitionTo("editor",{},{id:_id});
+        console.log(_id)
+        this.transitionTo("editor", {}, {id: _id});
     },
     componentDidUpdate: function () {
         this.setEvent();

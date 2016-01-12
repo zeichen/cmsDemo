@@ -102892,8 +102892,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher');
 var appConstants = require('../constants/appConstants');
 
 var compActions = {
-    getList:function(){
-            AppDispatcher.handleAction({
+    getList: function () {
+        AppDispatcher.handleAction({
             actionType: appConstants.COMP_GETLIST,
             data: null
         });
@@ -102932,10 +102932,10 @@ var appConstants = require('../constants/appConstants');
 //var actionType = require('../constants/actionType');
 
 var eventActions = {
-    getEvent:function(){
-         AppDispatcher.handleAction({
+    getEvent: function () {
+        AppDispatcher.handleAction({
             actionType: appConstants.EVENT_INIT
-           // data: item
+            // data: item
         });
     },
     createEvent: function (item) {
@@ -102986,7 +102986,7 @@ var Router = require('react-router');
 var MaterialList = require('./MaterialList');
 var _ = require('lodash');
 var compStore = require('../stores/compStore');
-var compActions= require('../actions/compActions');
+var compActions = require('../actions/compActions');
 
 //helper for not clean up objects
 function removeCanvasObj() {
@@ -102999,94 +102999,95 @@ function removeCanvasObj() {
 }
 
 
-function loadJSONHelper(jsonString){
-    var json={};
-        try {
-               json=JSON.parse(jsonString);
-            } catch (e) {
-               json= '{"objects":[],"background":""}' 
+function loadJSONHelper(jsonString) {
+    var json = {};
+    try {
+        json = JSON.parse(jsonString);
+    } catch (e) {
+        json = '{"objects":[],"background":""}'
+    }
+    window._canvas.loadFromJSON(json, function () {
+            window._canvas.add(_gridgroup);
+            window._canvas.sendToBack(_gridgroup);
+            window._canvas.renderAll.bind(canvas);
+        }
+        , function (o, object) {
+            fabric.log(o, object);
+            if (object.type == "image" && object._element == null) {
+                //   console.log(object);
+                var vid = document.createElement('video');
+                vid.src = object.src;
+                vid.loop = true;
+                vid.controls = true;
+                object._element = vid;
+                object._originalElement = vid;
+                object.getElement().play();
             }
-        window._canvas.loadFromJSON(json,function(){
-                  window._canvas.add(_gridgroup);
-                  window._canvas.sendToBack(_gridgroup);
-                  window._canvas.renderAll.bind(canvas);
-            }
-                , function (o, object) {
-                fabric.log(o, object);
-                if (object.type == "image" && object._element == null) {
-                 //   console.log(object);
-                    var vid = document.createElement('video');
-                    vid.src = object.src;
-                    vid.loop = true;
-                    vid.controls = true;
-                    object._element = vid;
-                    object._originalElement = vid;
-                    object.getElement().play();
-                }
-            });
+        });
 }
-var _gridgroup={};
+var _gridgroup = {};
 var CompositionEditor = React.createClass({displayName: "CompositionEditor",
 
     getInitialState: function () {
 
         /*
-        console.log(this.props.query.id)
-        if(!this.props.query.id){
-        return {
-            //id:compStore.getList().length,
-            //composition:{title:'new',data:{},duration:3600}  
+         console.log(this.props.query.id)
+         if(!this.props.query.id){
+         return {
+         //id:compStore.getList().length,
+         //composition:{title:'new',data:{},duration:3600}
          } 
-        }else{
-        return { 
-            id:this.props.query.id,
-            composition:_.find(compStore.getList(),'id',this.props.query.id)
-        }
-        }
-        */
+         }else{
+         return {
+         id:this.props.query.id,
+         composition:_.find(compStore.getList(),'id',this.props.query.id)
+         }
+         }
+         */
 
         //console.log(_.find(compStore.getList(),'id',this.props.query.id));
 
-        return{
+        return {
 
-            composition:{
-                id:'',
-                title:'new',
-                data:'',
-                duration:3600
-            }
-          //  id:compStore.getList()[0].id,
-          //  composition:compStore.getList()[0]
+            composition: {
+                id: '',
+                title: 'new',
+                data: '',
+                duration: 3600
+            },
+            textSize:40
+            //  id:compStore.getList()[0].id,
+            //  composition:compStore.getList()[0]
         }
-      
+
     },
-    componentWillUnmount:function(){
-        compStore.removeListener('compAdded',this._compAdded);
-        compStore.removeListener('compLoaded',this._compLoaded);
+    componentWillUnmount: function () {
+        compStore.removeListener('compAdded', this._compAdded);
+        compStore.removeListener('compLoaded', this._compLoaded);
         removeCanvasObj();
     },
-    initCanvas:function(){
+    initCanvas: function () {
 
 
     },
-    _compAdded:function(){
-       // console.log(compStore.getList()[compStore.getList().length-1]);
+    _compAdded: function () {
+        // console.log(compStore.getList()[compStore.getList().length-1]);
         this.setState({
-           composition:compStore.getList()[compStore.getList().length-1]
+            composition: compStore.getList()[compStore.getList().length - 1]
         })
     },
-    _compLoaded:function(){
-         this.setState({
-           composition:compStore.getComposition()
+    _compLoaded: function () {
+        this.setState({
+            composition: compStore.getComposition()
         })
         //  console.log(compStore.getComposition());
-       //   console.log(this.state.composition);
-          loadJSONHelper(compStore.getComposition().data)
+        //   console.log(this.state.composition);
+        loadJSONHelper(compStore.getComposition().data)
     },
     componentDidMount: function () {
-        compStore.on('compAdded',this._compAdded);
-        compStore.on('compLoaded',this._compLoaded);
-        var _this=this;
+        compStore.on('compAdded', this._compAdded);
+        compStore.on('compLoaded', this._compLoaded);
+        var _this = this;
         fabric.Object.prototype.set({
             transparentCorners: false,
             cornerColor: 'rgba(102,153,255,0.5)',
@@ -103094,7 +103095,7 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
             padding: 5
         });
 
-    // initialize fabric canvas and assign to global windows object for debug
+        // initialize fabric canvas and assign to global windows object for debug
         var canvas = window._canvas = new fabric.Canvas('canvas');
         canvas.selectionColor = 'rgba(0,255,0,0.3)';
         var json = '{}';
@@ -103102,12 +103103,11 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
             fabric.log(o, object);
         });
 
-        if(!this.props.query.id){
-        // compActions.addItem({ title:'new',data:'{}',duration:3600 });
-        }else{
-         compActions.getItem(this.props.query.id);  
+        if (!this.props.query.id) {
+            // compActions.addItem({ title:'new',data:'{}',duration:3600 });
+        } else {
+            compActions.getItem(this.props.query.id);
         }
-
 
 
         fabric.util.requestAnimFrame(function render() {
@@ -103120,19 +103120,18 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
 
         });
 
-     
-       
+
         // create grid
         var grid = 15;
         var gridgroup = new fabric.Group([]);
-        _gridgroup=gridgroup;
+        _gridgroup = gridgroup;
         for (var i = 0; i < (720 / grid); i++) {
             gridgroup.add(new fabric.Line([i * grid, 0, i * grid, 480], {stroke: '#ccc', selectable: false}));
             gridgroup.add(new fabric.Line([0, i * grid, 720, i * grid], {stroke: '#ccc', selectable: false}))
         }
         canvas.add(gridgroup);
         context.init({preventDoubleContext: true});
-       
+
         // snap to grid
         canvas.on('object:moving', function (options) {
             options.target.set({
@@ -103142,16 +103141,14 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
         });
 
 
-    
-         var json=this.state.composition.data;
-            //removeCanvasObj();
-            //var json = $('#canvasJSON').text();
-            try {
-                JSON.parse(json);
-            } catch (e) {
-               json= '{"objects":[],"background":""}' 
-            }
-        
+        var json = this.state.composition.data;
+        //removeCanvasObj();
+        //var json = $('#canvasJSON').text();
+        try {
+            JSON.parse(json);
+        } catch (e) {
+            json = '{"objects":[],"background":""}'
+        }
 
 
         canvas.on('object:selected', function (options) {
@@ -103222,7 +103219,7 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
                         var imgInstance = new fabric.Image(img, {
                             left: event.pageX - $('#canvas').offset().left,
                             top: event.pageY - $('#canvas').offset().top,
-                            opacity: 0.85
+                            opacity: 0.95
                         });
                         canvas.add(imgInstance);
                         break;
@@ -103240,7 +103237,7 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
                         videoInstance.getElement().play();
                         break;
 
-                        default:
+                    default:
                         break;
 
                 }
@@ -103267,7 +103264,7 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
         }
 
 
-/*-------------------UI-control--------------------------*/
+        /*-------------------UI-control--------------------------*/
 
 
         function addHandler(id, fn, eventName) {
@@ -103287,7 +103284,7 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
             setStyle(obj, 'fontWeight', isBold ? '' : 'bold');
         });
 
-        addHandler('italic', function () {
+        addHandler('italic', function (obj) {
             var isItalic = getStyle(obj, 'fontStyle') === 'italic';
             setStyle(obj, 'fontStyle', isItalic ? '' : 'italic');
         });
@@ -103352,61 +103349,65 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
             try {
                 JSON.parse(json);
             } catch (e) {
-               json= '{"objects":[],"background":""}' 
+                json = '{"objects":[],"background":""}'
             }
-            canvas.loadFromJSON(json,function(){
-                 canvas.add(gridgroup);
-                 canvas.sendToBack(gridgroup);
-                 canvas.renderAll.bind(canvas);
-            }
-                , function (o, object) {
-                fabric.log(o, object);
-                if (object.type == "image" && object._element == null) {
-                    console.log(object);
-                    var vid = document.createElement('video');
-                    vid.src = object.src;
-                    vid.loop = true;
-                    vid.controls = true;
-                    object._element = vid;
-                    object._originalElement = vid;
-                   object.getElement().play();
+            canvas.loadFromJSON(json, function () {
+                    canvas.add(gridgroup);
+                    canvas.sendToBack(gridgroup);
+                    canvas.renderAll.bind(canvas);
                 }
-            });
+                , function (o, object) {
+                    fabric.log(o, object);
+                    if (object.type == "image" && object._element == null) {
+                        console.log(object);
+                        var vid = document.createElement('video');
+                        vid.src = object.src;
+                        vid.loop = true;
+                        vid.controls = true;
+                        object._element = vid;
+                        object._originalElement = vid;
+                        object.getElement().play();
+                    }
+                });
         });
-    
-   
-        $('#Save').click(function(event) {
+
+
+        $('#Save').click(function (event) {
             canvas.remove(gridgroup);
             var jsonString = JSON.stringify(canvas);
             $('#canvasJSON').text(jsonString);
             canvas.add(gridgroup);
             console.log(_this)
             canvas.sendToBack(gridgroup);
-            if(_this.state.composition.id==''){ 
-               _this.state.composition.data=jsonString;
-              compActions.addItem(_this.state.composition)  
-            }else{
-              _this.state.composition.data=jsonString;
-              compActions.editItem(_this.state.composition)
+            if (_this.state.composition.id == '') {
+                _this.state.composition.data = jsonString;
+                compActions.addItem(_this.state.composition)
+            } else {
+                _this.state.composition.data = jsonString;
+                compActions.editItem(_this.state.composition)
             }
-             
-           });
 
-        $('#setGrid').click(function(event) {
-          if(gridgroup.visible){
-                gridgroup.setVisible(false);
-          }else{
-                 gridgroup.setVisible(true); 
-          };
         });
 
-    },changeTitle:function(event){
-     this.state.composition.title=event.target.value;
-     this.setState({composition:this.state.composition})
+        $('#setGrid').click(function (event) {
+            if (gridgroup.visible) {
+                gridgroup.setVisible(false);
+            } else {
+                gridgroup.setVisible(true);
+            }
+            ;
+        });
+
+    }, changeTitle: function (event) {
+        this.state.composition.title = event.target.value;
+        this.setState({composition: this.state.composition})
     },
-     changeduration:function(event){
-      this.state.composition.duration=event.target.value;
-      this.setState({composition:this.state.composition})
+    changeduration: function (event) {
+        this.state.composition.duration = event.target.value;
+        this.setState({composition: this.state.composition})
+    },changeTextSize:function(event){
+        //this.state.textSize = event.target.value;
+        this.setState({textSize:event.target.value})
     },
     render: function () {
         return (
@@ -103416,13 +103417,15 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
                 ), 
                 React.createElement("div", {className: "col-sm-9 col-sm-offset-3 main"}, 
 
-                 "composition title:  ", React.createElement("input", {id: "title", type: "text", value: this.state.composition.title, onChange: this.changeTitle}), 
-                  React.createElement("p", null), 
-                  "duration(second):  ", React.createElement("input", {id: "duration", type: "text", value: this.state.composition.duration, onChange: this.changeduration}), 
-                  React.createElement("p", null), 
+                    "composition title: ", React.createElement("input", {id: "title", type: "text", value: this.state.composition.title, 
+                                              onChange: this.changeTitle}), 
+                    React.createElement("p", null), 
+                    "duration(second): ", React.createElement("input", {id: "duration", type: "text", value: this.state.composition.duration, 
+                                             onChange: this.changeduration}), 
+                    React.createElement("p", null), 
                     React.createElement("div", {className: "btn-toolbar", role: "toolbar", "aria-label": "..."}, 
-                            
-                            React.createElement("div", {className: "btn-group", role: "group", "aria-label": "..."}, 
+
+                        React.createElement("div", {className: "btn-group", role: "group", "aria-label": "..."}, 
                             React.createElement("button", {type: "button", className: "btn btn-default", id: "textbutton"}, "text tool"), 
                             React.createElement("button", {type: "button", className: "btn btn-default", id: "loadJSON"}, "loadJSON"), 
                             React.createElement("button", {type: "button", className: "btn btn-default", id: "outputJSON"}, "outputJSON"), 
@@ -103439,13 +103442,14 @@ var CompositionEditor = React.createClass({displayName: "CompositionEditor",
                         React.createElement("button", {id: "line-through"}, "Line-through"), 
                         React.createElement("input", {type: "color", id: "color"}), 
                         React.createElement("input", {type: "color", id: "bg-color"}), 
-                        React.createElement("input", {type: "number", min: "5", max: "150", value: "40", id: "size", width: "40"})
+                        React.createElement("input", {type: "number", min: "5", max: "150", value: this.state.textSize, id: "size", width: "40", onChange: this.changeTextSize})
                     ), 
                     React.createElement("canvas", {id: "canvas", width: "720", height: "480", className: "canvascontext"}, "No Canvas."), 
 
                     React.createElement("figure", {className: "highlight", width: "720", height: "180"}, 
                         React.createElement("p", null, "CompositionJSON"), 
-                        React.createElement("textarea", {id: "canvasJSON", readonly: "readonly", placeholder: "{\"objects\":[],\"background\":\"\"}"})
+                        React.createElement("textarea", {id: "canvasJSON", readOnly: "readOnly", 
+                                  placeholder: "{\"objects\":[],\"background\":\"\"}"})
 
                     )
                 )
@@ -103459,7 +103463,7 @@ module.exports = CompositionEditor;
 },{"../actions/compActions":304,"../stores/compStore":325,"./MaterialList":308,"lodash":37,"react":300,"react-router":113}],308:[function(require,module,exports){
 'use strict';
 var React = require('react');
-var materialStore=require('../stores/materialStore')
+var materialStore = require('../stores/materialStore')
 
 
 var TreeNode = React.createClass({displayName: "TreeNode",
@@ -103477,8 +103481,8 @@ var TreeNode = React.createClass({displayName: "TreeNode",
                     $(this).html(elObject.name);
                 },
                 zIndex: 999,
-                revert: true,      
-                revertDuration: 0 
+                revert: true,
+                revertDuration: 0
             });
         }
 
@@ -103518,7 +103522,7 @@ var TreeNode = React.createClass({displayName: "TreeNode",
 
         var style;
         if (!this.state.visible) {
-            style = {display: "none"};    
+            style = {display: "none"};
         }
 
         return (
@@ -103539,9 +103543,9 @@ var TreeNode = React.createClass({displayName: "TreeNode",
 });
 
 var MaterialList = React.createClass({displayName: "MaterialList",
-     getInitialState: function () {
+    getInitialState: function () {
         return {
-            tree:materialStore.getList()
+            tree: materialStore.getList()
         };
     },
     componentDidMount: function () {
@@ -103550,8 +103554,8 @@ var MaterialList = React.createClass({displayName: "MaterialList",
     componentWillUnmount: function () {
         materialStore.removeChangeListener(this._onChange);
     },
-    _onChange:function(){
-      this.setState({
+    _onChange: function () {
+        this.setState({
             list: materialStore.getList()
         });
     },
@@ -103560,7 +103564,7 @@ var MaterialList = React.createClass({displayName: "MaterialList",
             React.createElement("div", null, 
 
                 React.createElement(TreeNode, {node: this.state.tree})
-               
+
             )
         );
     }
@@ -103604,262 +103608,262 @@ module.exports = App;
 
 },{"./common/header":311,"aui/externals":2,"jquery":32,"jquery-ui":31,"lodash":37,"react":300,"react-router":113}],310:[function(require,module,exports){
 var React = require('react');
-var fullCalendar= require('fullcalendar');
+var fullCalendar = require('fullcalendar');
 var eventStore = require('../../stores/eventStore');
 var eventAction = require('../../actions/eventAction');
 
-function getFreshEvents(){
-          $.ajax({
-            url: "http://localhost:3000/schedules.json",
-            type: 'get', // Send post data
-            async: false,
-            success: function(data){
-          var jsonString=JSON.stringify(data);
-          jsonString= jsonString.split('startdate').join('start');
-          jsonString= jsonString.split('enddate').join('end');
-         $('#calendar').fullCalendar('addEventSource', JSON.parse(jsonString));
-            }
-            });
-    }
+function getFreshEvents() {
+    $.ajax({
+        url: "http://localhost:3000/schedules.json",
+        type: 'get', // Send post data
+        async: false,
+        success: function (data) {
+            var jsonString = JSON.stringify(data);
+            jsonString = jsonString.split('startdate').join('start');
+            jsonString = jsonString.split('enddate').join('end');
+            $('#calendar').fullCalendar('addEventSource', JSON.parse(jsonString));
+        }
+    });
+}
 
 
 var Calendar = React.createClass({displayName: "Calendar",
-     getInitialState: function () {
+    getInitialState: function () {
         return {
-            events:{}
+            events: {}
         };
     },
     componentWillUnmount: function () {
-       // eventStore.removeChangeListener(this._calendarInit);
-    eventStore.removeListener('gotInitial',this._calendarInit);
+        // eventStore.removeChangeListener(this._calendarInit);
+        eventStore.removeListener('gotInitial', this._calendarInit);
     },
     componentDidMount: function () {
-    eventStore.on('gotInitial',this._calendarInit);
-   // eventStore.addChangeListener(this._calendarInit);
-    eventAction.getEvent();
-     },
-    _calendarInit:function(){
-        this.state.events=eventStore.getEvents();
+        eventStore.on('gotInitial', this._calendarInit);
+        // eventStore.addChangeListener(this._calendarInit);
+        eventAction.getEvent();
+    },
+    _calendarInit: function () {
+        this.state.events = eventStore.getEvents();
         context.init({preventDoubleContext: true});
-  // $.getScript("vendor/fullcalendar/fullcalendar.min.js", function () {
+        // $.getScript("vendor/fullcalendar/fullcalendar.min.js", function () {
 
 
         $('#calendar').fullCalendar({
-         events:this.state.events//JSON.parse(json_events)
-                ,header: {
+            events: this.state.events//JSON.parse(json_events)
+            , header: {
                 left: 'prev,next today',
                 center: 'title',
                 right: 'month,agendaWeek,agendaDay'
             },
-            defaultView:'agendaWeek',
+            defaultView: 'agendaWeek',
             editable: true,
             droppable: true, // this allows things to be dropped onto the calendar
-            drop: function(event) {
-              // console.log(event);
-                 //$('#calendar').fullCalendar('updateEvent',event);
+            drop: function (event) {
+                // console.log(event);
+                //$('#calendar').fullCalendar('updateEvent',event);
             },
 
-        select: function(start, end, jsEvent, view, resource) {
-        console.log(
-        'select callback',
-        start.format(),   
-        end.format(),
-        resource ? resource.id : '(no resource)'
-        );  
-        },
-        eventReceive: function(event){
-           // console.log(eventStore.getConfig());
-         //  console.log(event)
-           $('#calendar').fullCalendar('updateEvent',event);
+            select: function (start, end, jsEvent, view, resource) {
+                console.log(
+                    'select callback',
+                    start.format(),
+                    end.format(),
+                    resource ? resource.id : '(no resource)'
+                );
+            },
+            eventReceive: function (event) {
+                // console.log(eventStore.getConfig());
+                //  console.log(event)
+                $('#calendar').fullCalendar('updateEvent', event);
                 var title = event.title;
                 var start = event.start.format("YYYY-MM-DD[T]HH:mm:SS");
-                var end=event.end.format("YYYY-MM-DD[T]HH:mm:SS");
+                var end = event.end.format("YYYY-MM-DD[T]HH:mm:SS");
                 var duration = event.duration;
-             //   console.log(duration);
-             //   console.log(event)
-var form = new FormData();
-form.append("title", title);
-form.append("startdate",start);
-form.append("enddate", event.end);
-form.append("allday", "false");
-form.append("CompId", event.CompId);
+                //   console.log(duration);
+                //   console.log(event)
+                var form = new FormData();
+                form.append("title", title);
+                form.append("startdate", start);
+                form.append("enddate", event.end);
+                form.append("allday", "false");
+                form.append("CompId", event.CompId);
 
-var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:3000/schedules.json",
-  "method": "POST",
-  "processData": false,
-  "contentType": false,
-  "mimeType": "multipart/form-data",
-  "data": form
-}
+                var settings = {
+                    "async": true,
+                    "crossDomain": true,
+                    "url": "http://localhost:3000/schedules.json",
+                    "method": "POST",
+                    "processData": false,
+                    "contentType": false,
+                    "mimeType": "multipart/form-data",
+                    "data": form
+                }
 
-$.ajax(settings).done(function (response) {
- event._id=JSON.parse(response).id;
-  //event._id=newData.id;
-});
-               
-               // console.log(event);*/
+                $.ajax(settings).done(function (response) {
+                    event._id = JSON.parse(response).id;
+                    //event._id=newData.id;
+                });
+
+                // console.log(event);*/
             },
-        eventDrop: function(event, delta, revertFunc) {
+            eventDrop: function (event, delta, revertFunc) {
                 var title = event.title;
                 var start = event.start.format();
                 var end = (event.end == null) ? start : event.end.format();
-                var data= 'type=resetdate&title='+title+'&start='+start+'&end='+end+'&eventid='+event.id
-               // eventAction.createEvent(data);
-              
-var form = new FormData();
-form.append("title",title);
-form.append("startdate", start);
-form.append("enddate", end);
-form.append("allday", "false");
-form.append("CompId", "1");
+                var data = 'type=resetdate&title=' + title + '&start=' + start + '&end=' + end + '&eventid=' + event.id
+                // eventAction.createEvent(data);
 
-var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:3000/schedules/"+event._id+".json",
-  "method": "PUT",
-  "headers": {
-    "cache-control": "no-cache",
-    "postman-token": "725dbf40-ccf6-8a51-cd31-b71b480db5f6"
-  },
-  "processData": false,
-  "contentType": false,
-  "mimeType": "multipart/form-data",
-  "data": form
-}
+                var form = new FormData();
+                form.append("title", title);
+                form.append("startdate", start);
+                form.append("enddate", end);
+                form.append("allday", "false");
+                form.append("CompId", "1");
 
-$.ajax(settings).done(function (response) {
+                var settings = {
+                    "async": true,
+                    "crossDomain": true,
+                    "url": "http://localhost:3000/schedules/" + event._id + ".json",
+                    "method": "PUT",
+                    "headers": {
+                        "cache-control": "no-cache",
+                        "postman-token": "725dbf40-ccf6-8a51-cd31-b71b480db5f6"
+                    },
+                    "processData": false,
+                    "contentType": false,
+                    "mimeType": "multipart/form-data",
+                    "data": form
+                }
+
+                $.ajax(settings).done(function (response) {
 //  console.log(response);
 
-   // if(response.status != 'success')  {revertFunc();}                                                 
-});
-$('#calendar').fullCalendar('updateEvent',event);
+                    // if(response.status != 'success')  {revertFunc();}
+                });
+                $('#calendar').fullCalendar('updateEvent', event);
 
             },
-         eventClick: function(event, jsEvent, view) {
-               /*
-                  var title = prompt('Event Title:', event.title, { buttons: { Ok: true, Cancel: false} });
-                  if (title){
-                      event.title = title;
-                      console.log('type=changetitle&title='+title+'&eventid='+event.id);
-                      $.ajax({
-                            url: eventStore.getConfig().url,
-                            data: 'type=changetitle&title='+title+'&eventid='+event.id,
-                            type: 'POvar form = new FormData();
-form.append("title", "putputput");
-form.append("startdate", "2016-01-13T04:00:00.000Z");
-form.append("enddate", "2016-01-13T07:00:00.000Z");
-form.append("allday", "false");
-form.append("CompId", "1");
+            eventClick: function (event, jsEvent, view) {
+                /*
+                 var title = prompt('Event Title:', event.title, { buttons: { Ok: true, Cancel: false} });
+                 if (title){
+                 event.title = title;
+                 console.log('type=changetitle&title='+title+'&eventid='+event.id);
+                 $.ajax({
+                 url: eventStore.getConfig().url,
+                 data: 'type=changetitle&title='+title+'&eventid='+event.id,
+                 type: 'POvar form = new FormData();
+                 form.append("title", "putputput");
+                 form.append("startdate", "2016-01-13T04:00:00.000Z");
+                 form.append("enddate", "2016-01-13T07:00:00.000Z");
+                 form.append("allday", "false");
+                 form.append("CompId", "1");
 
-var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:3000/schedules/50.json",
-  "method": "PUT",
-  "headers": {
-    "cache-control": "no-cache",
-    "postman-token": "725dbf40-ccf6-8a51-cd31-b71b480db5f6"
-  },
-  "processData": false,
-  "contentType": false,
-  "mimeType": "multipart/form-data",
-  "data": form
-}
+                 var settings = {
+                 "async": true,
+                 "crossDomain": true,
+                 "url": "http://localhost:3000/schedules/50.json",
+                 "method": "PUT",
+                 "headers": {
+                 "cache-control": "no-cache",
+                 "postman-token": "725dbf40-ccf6-8a51-cd31-b71b480db5f6"
+                 },
+                 "processData": false,
+                 "contentType": false,
+                 "mimeType": "multipart/form-data",
+                 "data": form
+                 }
 
-$.ajax(settings).done(function (response) {
-  console.log(response);
-});ST',
-                            dataType: 'json',
-                            success: function(response){    
-                                if(response.status == 'success')                            
-                                    $('#calendar').fullCalendar('updateEvent',event);
-                            },
-                            error: function(e){
-                                alert('Error processing your request: '+e.responseText);
-                            }
-                        });
-                  }*/
+                 $.ajax(settings).done(function (response) {
+                 console.log(response);
+                 });ST',
+                 dataType: 'json',
+                 success: function(response){
+                 if(response.status == 'success')
+                 $('#calendar').fullCalendar('updateEvent',event);
+                 },
+                 error: function(e){
+                 alert('Error processing your request: '+e.responseText);
+                 }
+                 });
+                 }*/
             },
-            eventResize: function(event, delta, revertFunc) {
+            eventResize: function (event, delta, revertFunc) {
                 var title = event.title;
                 var start = event.start.format();
                 var end = (event.end == null) ? start : event.end.format();
-             //   console.log(end);
+                //   console.log(end);
                 var form = new FormData();
-form.append("title",title);
-form.append("startdate", start);
-form.append("enddate", end);
-form.append("allday", "false");
-form.append("CompId", "1");
+                form.append("title", title);
+                form.append("startdate", start);
+                form.append("enddate", end);
+                form.append("allday", "false");
+                form.append("CompId", "1");
 
-var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:3000/schedules/"+event.id+".json",
-  "method": "PUT",
-  "headers": {
-    "cache-control": "no-cache",
-    "postman-token": "725dbf40-ccf6-8a51-cd31-b71b480db5f6"
-  },
-  "processData": false,
-  "contentType": false,
-  "mimeType": "multipart/form-data",
-  "data": form
-}
+                var settings = {
+                    "async": true,
+                    "crossDomain": true,
+                    "url": "http://localhost:3000/schedules/" + event.id + ".json",
+                    "method": "PUT",
+                    "headers": {
+                        "cache-control": "no-cache",
+                        "postman-token": "725dbf40-ccf6-8a51-cd31-b71b480db5f6"
+                    },
+                    "processData": false,
+                    "contentType": false,
+                    "mimeType": "multipart/form-data",
+                    "data": form
+                }
 
-$.ajax(settings).done(function (response) {
- // console.log(response);
-   // if(response.status != 'success')  {revertFunc();}                                                 
-});
+                $.ajax(settings).done(function (response) {
+                    // console.log(response);
+                    // if(response.status != 'success')  {revertFunc();}
+                });
 
-    },
-    _onev:function(){
-   //   console.log('onevevevev')
-    },
+            },
+            _onev: function () {
+                //   console.log('onevevevev')
+            },
 
-        eventRender: function (event, element) {
-           // console.log(element);
-        element.bind('mousedown', function (mouseEvent) {
-            if (mouseEvent.which == 3) {
-             //  console.log(event);
-                     context.attach('#calendar', [
-                {
-                    text: 'delete', action: function (e) {
-                   e.preventDefault();
-                  // $('#calendar').fullCalendar('removeEvents', event._id);
-                        
-                            var form = new FormData();
-                            form.append("title", "putputput");
-                            form.append("startdate", "2016-01-11T04:00:00.000Z");
-                            form.append("enddate", "2016-01-11T08:00:00.000Z");
-                            form.append("allday", "false");
-                            form.append("CompId", "1");
-                            var settings = {
-                              "async": true,
-                              "crossDomain": true,
-                              "url": "http://localhost:3000/schedules/"+event.id+".json",
-                              "method": "DELETE",
-                              "headers": {
-                                "cache-control": "no-cache"
-                              }
-                            }
+            eventRender: function (event, element) {
+                // console.log(element);
+                element.bind('mousedown', function (mouseEvent) {
+                    if (mouseEvent.which == 3) {
+                        //  console.log(event);
+                        context.attach('#calendar', [
+                            {
+                                text: 'delete', action: function (e) {
+                                e.preventDefault();
+                                // $('#calendar').fullCalendar('removeEvents', event._id);
 
-                            $.ajax(settings).done(function (response) {
-                              $('#calendar').fullCalendar('removeEvents');
+                                var form = new FormData();
+                                form.append("title", "putputput");
+                                form.append("startdate", "2016-01-11T04:00:00.000Z");
+                                form.append("enddate", "2016-01-11T08:00:00.000Z");
+                                form.append("allday", "false");
+                                form.append("CompId", "1");
+                                var settings = {
+                                    "async": true,
+                                    "crossDomain": true,
+                                    "url": "http://localhost:3000/schedules/" + event._id + ".json",
+                                    "method": "DELETE",
+                                    "headers": {
+                                        "cache-control": "no-cache"
+                                    }
+                                }
+
+                                $.ajax(settings).done(function (response) {
+                                    $('#calendar').fullCalendar('removeEvents');
                                     getFreshEvents();
-                            });
+                                });
 
 
-                }
-                }
-            ]);
+                            }
+                            }
+                        ]);
+                    }
+                });
             }
-        });
-    }
         });
 
     },
@@ -103954,9 +103958,9 @@ var AddItem = React.createClass({displayName: "AddItem",
     handleSubmit: function (e) {
         if (e.keyCode === 13) {
             var newItem = {
-                title:this.refs.newItem.getDOMNode().value,
-                data:'{}',
-                duration:3600
+                title: this.refs.newItem.getDOMNode().value,
+                data: '{}',
+                duration: 3600
             }
             this.refs.newItem.getDOMNode().value = '';
             this.props.add(newItem);
@@ -103993,9 +103997,10 @@ var List = React.createClass({displayName: "List",
     render: function () {
 
         var listItems = this.props.items.map(function (item, index) {
-         
+
             return (
-                React.createElement(ListItem, {key: index, item: item, remove: this.props.remove.bind(null, item.id), edit: this.props.edit.bind(null, item.id)})
+                React.createElement(ListItem, {key: index, item: item, remove: this.props.remove.bind(null, item.id), 
+                          edit: this.props.edit.bind(null, item.id)})
             )
 
         }.bind(this));
@@ -104018,8 +104023,8 @@ var compActions = require('../../actions/compActions');
 var Router = require('react-router');
 
 var ListContainer = React.createClass({displayName: "ListContainer",
-    mixins:[
-    Router.Navigation
+    mixins: [
+        Router.Navigation
     ],
 
     setEvent: function () {
@@ -104031,30 +104036,30 @@ var ListContainer = React.createClass({displayName: "ListContainer",
         }
     },
     componentDidMount: function () {
-        compStore.on('API_CompositionList',this._loadList)
+        compStore.on('API_CompositionList', this._loadList)
         compStore.addChangeListener(this._onChange);
         compActions.getList();
         this.setEvent();
 
     },
-    _loadList:function(){
-        this.setState({list:compStore.getList()});
+    _loadList: function () {
+        this.setState({list: compStore.getList()});
     },
     componentWillUnmount: function () {
-        compStore.removeListener('API_CompositionList',this._loadList)
+        compStore.removeListener('API_CompositionList', this._loadList)
         compStore.removeChangeListener(this._onChange);
     },
     handleAddItem: function (newItem) {
         compActions.addItem(newItem);
     },
     handleRemoveItem: function (_id) {
-       
+
         compActions.removeItem(_id);
     },
     handleEditItem: function (_id) {
         //compActions.removeItem(index);
-    console.log(_id)
-    this.transitionTo("editor",{},{id:_id});
+        console.log(_id)
+        this.transitionTo("editor", {}, {id: _id});
     },
     componentDidUpdate: function () {
         this.setEvent();
@@ -104086,45 +104091,50 @@ var ListItem = React.createClass({displayName: "ListItem",
     componentDidMount: function () {
 
         var el = this.getDOMNode();
-        console.log(this.props.item.duration);
+       // console.log(this.props.item.duration);
         var eventObject = {
             title: this.props.item.title,
             CompId: this.props.item.id,
-            duration:moment().startOf('day').seconds(this.props.item.duration).format('H:mm:ss')
+            duration: moment().startOf('day').seconds(this.props.item.duration).format('H:mm:ss')
         };
-       
+
 
         $(el).data('event', {
-                title: eventObject.title, // use the element's text as the event title
-                duration:eventObject.duration,
-                CompId:eventObject.CompId,
-                stick: true // maintain when user navigates (see docs on the renderEvent method)
-            });
+            title: eventObject.title, // use the element's text as the event title
+            duration: eventObject.duration,
+            CompId: eventObject.CompId,
+            stick: true // maintain when user navigates (see docs on the renderEvent method)
+        });
 
-            // make the event draggable using jQuery UI
-           
+        // make the event draggable using jQuery UI
+
 
         $(el).draggable({
-     //     helper: 'clone',
-          opacity:0.7,
-        //  drag:function(){$('.sidebar').css("overflow-y", "fixed");},
-        //  stop:function(){$('.sidebar').css("overflow-y", "scroll");},            
+            //helper: 'clone',
+            opacity: 0.7,
+            drag:function(){
+           //   $('.sidebar').css("overflow-y", "fixed");
+           //   $(el)).appendTo('body');
+           //   $(el)).css('position','absolute');
+           // console.log($(this).position());
+            },
+            //  stop:function(){$('.sidebar').css("overflow-y", "scroll");},
             zIndex: 999,
             revert: true,
-            revertDuration: 0  
+            revertDuration: 0
         });
     },
     componentDidUpdate: function () {
     },
     render: function () {
         return (
-          React.createElement("li", {className: "fc-event list-group-item"}, 
+            React.createElement("li", {className: "fc-event list-group-item"}, 
           React.createElement("span", {className: "glyphicon glyphicon-remove", onClick: this.props.remove.bind(null, this.props.item.id)}
           ), 
           React.createElement("span", null, 
              this.props.item.title, " ", moment().startOf('day')
-        .seconds(this.props.item.duration)
-        .format('H:mm:ss')
+              .seconds(this.props.item.duration)
+              .format('H:mm:ss')
           ), 
            React.createElement("span", {className: "glyphicon glyphicon-edit", onClick: this.props.edit.bind(null, this.props.item.id)}
           )
@@ -104180,10 +104190,9 @@ module.exports = Scheduler;
 
 module.exports = {
     INITAILIZE: 'initialize',
-   EVENT_CREATE:'createEvent',
-   EVENT_UPDATE:'updateEvent',
-   EVENT_DELETE:'deleteEvent'
-
+    EVENT_CREATE: 'createEvent',
+    EVENT_UPDATE: 'updateEvent',
+    EVENT_DELETE: 'deleteEvent'
 
 
 };
@@ -104194,20 +104203,19 @@ var appConstants = {
     REMOVE_ITEM: "REMOVE_ITEM",
     EDIT_ITEM: "EDIT_ITEM",
 
-  
-   
-   COMP_GETLIST:"COMP_GETLIST",
-   COMP_ADD:"COMP_ADD",
-   COMP_DELETE:"COMP_DELETE",
-   COMP_UPDATE:"COMP_UPDATE",
-   COMP_LOAD:"COMP_LOAD",
 
-   EVENT_INIT:"getEvents",
-   EVENT_CREATE:"createEvent",
-   EVENT_UPDATE:"updateEvent",
-   EVENT_DELETE:"deleteEvent",
+    COMP_GETLIST: "COMP_GETLIST",
+    COMP_ADD: "COMP_ADD",
+    COMP_DELETE: "COMP_DELETE",
+    COMP_UPDATE: "COMP_UPDATE",
+    COMP_LOAD: "COMP_LOAD",
 
-   INITAILIZE: "initialize"
+    EVENT_INIT: "getEvents",
+    EVENT_CREATE: "createEvent",
+    EVENT_UPDATE: "updateEvent",
+    EVENT_DELETE: "deleteEvent",
+
+    INITAILIZE: "initialize"
 };
 
 module.exports = appConstants;
@@ -104274,7 +104282,7 @@ var routes = (
         React.createElement(Route, {name: "comp", handler: require('./components/compositionList/ListContainer')}), 
         React.createElement(Route, {name: "scheduler", handler: require('./components/scheduler')}), 
         React.createElement(Route, {name: "editor", path: "/editor", handler: require('./components/CompositionEditor')}, 
-        React.createElement(Route, {path: "/editor/:id", handler: require('./components/CompositionEditor')})
+            React.createElement(Route, {path: "/editor/:id", handler: require('./components/CompositionEditor')})
         ), 
         React.createElement(NotFoundRoute, {handler: require('./components/common/notFoundPage')})
 
@@ -104355,7 +104363,7 @@ var CHANGE_EVENT = 'change';
 
 var _store = {
     list: [],
-    currentData:{}
+    currentData: {}
 };
 
 
@@ -104363,22 +104371,22 @@ var addItem = function (item) {
     _store.list.push(item);
 };
 
-var setItemData = function (index,data) {
-    _store.list[index]=data;
+var setItemData = function (index, data) {
+    _store.list[index] = data;
 };
 
 var removeItem = function (_id) {
 //var index=_.find(_store.list,function(o){return o.id=_id;});
 //_store.list.splice(index, 1);
 
-_.remove(_store.list, function(obj) {
-    return obj.id === _id;
-});
+    _.remove(_store.list, function (obj) {
+        return obj.id === _id;
+    });
 
 
 }
-var editItem = function (index,data) {
-   _store.list[index]=data;
+var editItem = function (index, data) {
+    _store.list[index] = data;
 }
 
 var compStore = objectAssign({}, EventEmitter.prototype, {
@@ -104399,95 +104407,95 @@ var compStore = objectAssign({}, EventEmitter.prototype, {
 AppDispatcher.register(function (payload) {
     var action = payload.action;
     switch (action.actionType) {
-         case appConstants.COMP_GETLIST:
+        case appConstants.COMP_GETLIST:
             $.ajax({
-            url: "http://localhost:3000/compositions.json",
-            type: 'get', // Send post data
-            async: false,
-            success: function(data){
-          //var jsonString=JSON.stringify(data);         
-          _store.list=data
-          compStore.emit('API_CompositionList');
-            }
+                url: "http://localhost:3000/compositions.json",
+                type: 'get', // Send post data
+                async: false,
+                success: function (data) {
+                    //var jsonString=JSON.stringify(data);
+                    _store.list = data
+                    compStore.emit('API_CompositionList');
+                }
             });
-         break;
-          case appConstants.COMP_LOAD:
-          $.ajax({
-            url: "http://localhost:3000/compositions/"+action.data+".json",
-            type: 'get', // Send post data
-            async: false,
-            success: function(data){
-          //var jsonString=JSON.stringify(data);         
-            //_store.list.push(data);
-            _store.currentData=data
-            compStore.emit('compLoaded');
-            }
+            break;
+        case appConstants.COMP_LOAD:
+            $.ajax({
+                url: "http://localhost:3000/compositions/" + action.data + ".json",
+                type: 'get', // Send post data
+                async: false,
+                success: function (data) {
+                    //var jsonString=JSON.stringify(data);
+                    //_store.list.push(data);
+                    _store.currentData = data
+                    compStore.emit('compLoaded');
+                }
             });
             compStore.emit(CHANGE_EVENT);
             break;
-         case appConstants.COMP_UPDATE:
+        case appConstants.COMP_UPDATE:
             console.log(payload);
             editItem(action.data);
-var form = new FormData();
-form.append("title", action.data.title);
-form.append("data", action.data.data);
-form.append("duration", action.data.duration);
+            var form = new FormData();
+            form.append("title", action.data.title);
+            form.append("data", action.data.data);
+            form.append("duration", action.data.duration);
 
-var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:3000/compositions/"+action.data.id+".json",
-  "method": "PUT",
-  "processData": false,
-  "contentType": false,
-  "mimeType": "multipart/form-data",
-  "data": form
-}
+            var settings = {
+                "async": true,
+                "crossDomain": true,
+                "url": "http://localhost:3000/compositions/" + action.data.id + ".json",
+                "method": "PUT",
+                "processData": false,
+                "contentType": false,
+                "mimeType": "multipart/form-data",
+                "data": form
+            }
 
-$.ajax(settings).done(function (response) {
-  console.log(response);
-});
+            $.ajax(settings).done(function (response) {
+                console.log(response);
+            });
             //compStore.emit(CHANGE_EVENT);
             break;
         case appConstants.COMP_ADD:
-        var form = new FormData();
-console.log(action);
-form.append("title", action.data.title);
-form.append("data", action.data.data);
-form.append("duration", action.data.duration);
+            var form = new FormData();
+            console.log(action);
+            form.append("title", action.data.title);
+            form.append("data", action.data.data);
+            form.append("duration", action.data.duration);
 
-var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:3000/compositions.json",
-  "method": "POST",
-  "processData": false,
-  "contentType": false,
-  "mimeType": "multipart/form-data",
-  "data": form
-}
+            var settings = {
+                "async": true,
+                "crossDomain": true,
+                "url": "http://localhost:3000/compositions.json",
+                "method": "POST",
+                "processData": false,
+                "contentType": false,
+                "mimeType": "multipart/form-data",
+                "data": form
+            }
 
-$.ajax(settings).done(function (response) {
-  console.log(response);
-  addItem(JSON.parse(response));
-  compStore.emit(CHANGE_EVENT);
-  compStore.emit('compAdded');
-});
-    break;
- case appConstants.COMP_DELETE:
+            $.ajax(settings).done(function (response) {
+                console.log(response);
+                addItem(JSON.parse(response));
+                compStore.emit(CHANGE_EVENT);
+                compStore.emit('compAdded');
+            });
+            break;
+        case appConstants.COMP_DELETE:
 
- var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:3000/compositions/"+action.data+".json",
-  "method": "DELETE",
-}
-$.ajax(settings).done(function (response) {
-  //console.log(response);
-  removeItem(action.data);
-  compStore.emit(CHANGE_EVENT);
-});
-            
+            var settings = {
+                "async": true,
+                "crossDomain": true,
+                "url": "http://localhost:3000/compositions/" + action.data + ".json",
+                "method": "DELETE",
+            }
+            $.ajax(settings).done(function (response) {
+                //console.log(response);
+                removeItem(action.data);
+                compStore.emit(CHANGE_EVENT);
+            });
+
             break;
         default:
             return true;
@@ -104506,9 +104514,9 @@ var EventEmitter = require('events').EventEmitter;
 var CHANGE_EVENT = 'change';
 
 var _store = {
-   list:[],
-   events:{},
-   config:{url:'http://localhost/calendar/process.php'}
+    list: [],
+    events: {},
+    config: {url: 'http://localhost/calendar/process.php'}
 };
 
 var addItem = function (item) {
@@ -104519,9 +104527,9 @@ var removeItem = function (index) {
     _store.list.splice(index, 1);
 }
 
-var getEventApi=function(){
-       
-    }
+var getEventApi = function () {
+
+}
 
 var eventStore = objectAssign({}, EventEmitter.prototype, {
     addChangeListener: function (callback) {
@@ -104530,17 +104538,17 @@ var eventStore = objectAssign({}, EventEmitter.prototype, {
     removeChangeListener: function (callback) {
         this.removeListener(CHANGE_EVENT, callback);
     },
-   
+
     getList: function () {
         return _store.list;
     },
-    getConfig:function(){
+    getConfig: function () {
         return _store.config;
     },
-    getEvents:function(){
+    getEvents: function () {
         return _store.events
     },
-    createEvent:function(event){
+    createEvent: function (event) {
 
     }
 });
@@ -104550,23 +104558,23 @@ AppDispatcher.register(function (payload) {
     switch (action.actionType) {
         case appConstants.EVENT_INIT:
             $.ajax({
-            url: "http://localhost:3000/schedules.json",
-            type: 'get', // Send post data
-            async: false,
-            success: function(data){
-          var jsonString=JSON.stringify(data);
-          jsonString= jsonString.split('startdate').join('start');
-          jsonString= jsonString.split('enddate').join('end');
-          _store.events=JSON.parse(jsonString);
-          eventStore.emit('gotInitial');
-            }
+                url: "http://localhost:3000/schedules.json",
+                type: 'get', // Send post data
+                async: false,
+                success: function (data) {
+                    var jsonString = JSON.stringify(data);
+                    jsonString = jsonString.split('startdate').join('start');
+                    jsonString = jsonString.split('enddate').join('end');
+                    _store.events = JSON.parse(jsonString);
+                    eventStore.emit('gotInitial');
+                }
             });
-         break;
-        case appConstants.EVENT_CREATE:
-            
-             eventStore.emit(CHANGE_EVENT);
             break;
-                
+        case appConstants.EVENT_CREATE:
+
+            eventStore.emit(CHANGE_EVENT);
+            break;
+
         case appConstants.ADD_ITEM:
             addItem(action.data);
             eventStore.emit(CHANGE_EVENT);
@@ -104592,27 +104600,26 @@ var _ = require('lodash');
 
 var _items = [];
 var _store = {
-list:{
-    name: "assets",
-    childNodes: [
-        {   
-            name: "banner", childNodes: [
-            {name: "3.jpg", path: 'assets/banner/3.jpg', media: 'img'},
-            {name: "4.jpg", path: 'assets/banner/4.jpg', media: 'img'},
-            {name: "7.jpg", path: 'assets/banner/7.jpg', media: 'img'},
-            {name: "9.jpg", path: 'assets/banner/9.jpg', media: 'img'},
-            {name: "12.jpg", path: 'assets/banner/12.jpg', media: 'img'}
+    list: {
+        name: "assets",
+        childNodes: [
+            {
+                name: "banner", childNodes: [
+                {name: "3.jpg", path: 'assets/banner/3.jpg', media: 'img'},
+                {name: "4.jpg", path: 'assets/banner/4.jpg', media: 'img'},
+                {name: "7.jpg", path: 'assets/banner/7.jpg', media: 'img'},
+                {name: "9.jpg", path: 'assets/banner/9.jpg', media: 'img'},
+                {name: "12.jpg", path: 'assets/banner/12.jpg', media: 'img'}
+            ]
+            },
+            {
+                name: "video", childNodes: [
+                {name: "0523a.mp4", path: 'assets/video/0523a.mp4', media: 'video'},
+                {name: "Sequence.mp4", path: 'assets/video/Sequence.mp4', media: 'video'},
+            ]
+            }
         ]
-        },
-        {
-            name: "video", childNodes: [
-            {name: "0523a.mp4", path: 'assets/video/0523a.mp4', media: 'video'},
-            {name: "Sequence.mp4", path: 'assets/video/Sequence.mp4', media: 'video'},
-        ]
-        }
-    ]
-}
-
+    }
 
 
 }
@@ -104635,9 +104642,9 @@ var materialStore = assign({}, EventEmitter.prototype, {
 Dispatcher.register(function (action) {
     switch (action.actionType) {
         case ActionTypes.INITIALIZE:
-            
-        break;
-       
+
+            break;
+
         default:
         //
     }

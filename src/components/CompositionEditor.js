@@ -5,7 +5,7 @@ var Router = require('react-router');
 var MaterialList = require('./MaterialList');
 var _ = require('lodash');
 var compStore = require('../stores/compStore');
-var compActions= require('../actions/compActions');
+var compActions = require('../actions/compActions');
 
 //helper for not clean up objects
 function removeCanvasObj() {
@@ -18,94 +18,95 @@ function removeCanvasObj() {
 }
 
 
-function loadJSONHelper(jsonString){
-    var json={};
-        try {
-               json=JSON.parse(jsonString);
-            } catch (e) {
-               json= '{"objects":[],"background":""}' 
+function loadJSONHelper(jsonString) {
+    var json = {};
+    try {
+        json = JSON.parse(jsonString);
+    } catch (e) {
+        json = '{"objects":[],"background":""}'
+    }
+    window._canvas.loadFromJSON(json, function () {
+            window._canvas.add(_gridgroup);
+            window._canvas.sendToBack(_gridgroup);
+            window._canvas.renderAll.bind(canvas);
+        }
+        , function (o, object) {
+            fabric.log(o, object);
+            if (object.type == "image" && object._element == null) {
+                //   console.log(object);
+                var vid = document.createElement('video');
+                vid.src = object.src;
+                vid.loop = true;
+                vid.controls = true;
+                object._element = vid;
+                object._originalElement = vid;
+                object.getElement().play();
             }
-        window._canvas.loadFromJSON(json,function(){
-                  window._canvas.add(_gridgroup);
-                  window._canvas.sendToBack(_gridgroup);
-                  window._canvas.renderAll.bind(canvas);
-            }
-                , function (o, object) {
-                fabric.log(o, object);
-                if (object.type == "image" && object._element == null) {
-                 //   console.log(object);
-                    var vid = document.createElement('video');
-                    vid.src = object.src;
-                    vid.loop = true;
-                    vid.controls = true;
-                    object._element = vid;
-                    object._originalElement = vid;
-                    object.getElement().play();
-                }
-            });
+        });
 }
-var _gridgroup={};
+var _gridgroup = {};
 var CompositionEditor = React.createClass({
 
     getInitialState: function () {
 
         /*
-        console.log(this.props.query.id)
-        if(!this.props.query.id){
-        return {
-            //id:compStore.getList().length,
-            //composition:{title:'new',data:{},duration:3600}  
+         console.log(this.props.query.id)
+         if(!this.props.query.id){
+         return {
+         //id:compStore.getList().length,
+         //composition:{title:'new',data:{},duration:3600}
          } 
-        }else{
-        return { 
-            id:this.props.query.id,
-            composition:_.find(compStore.getList(),'id',this.props.query.id)
-        }
-        }
-        */
+         }else{
+         return {
+         id:this.props.query.id,
+         composition:_.find(compStore.getList(),'id',this.props.query.id)
+         }
+         }
+         */
 
         //console.log(_.find(compStore.getList(),'id',this.props.query.id));
 
-        return{
+        return {
 
-            composition:{
-                id:'',
-                title:'new',
-                data:'',
-                duration:3600
-            }
-          //  id:compStore.getList()[0].id,
-          //  composition:compStore.getList()[0]
+            composition: {
+                id: '',
+                title: 'new',
+                data: '',
+                duration: 3600
+            },
+            textSize:40
+            //  id:compStore.getList()[0].id,
+            //  composition:compStore.getList()[0]
         }
-      
+
     },
-    componentWillUnmount:function(){
-        compStore.removeListener('compAdded',this._compAdded);
-        compStore.removeListener('compLoaded',this._compLoaded);
+    componentWillUnmount: function () {
+        compStore.removeListener('compAdded', this._compAdded);
+        compStore.removeListener('compLoaded', this._compLoaded);
         removeCanvasObj();
     },
-    initCanvas:function(){
+    initCanvas: function () {
 
 
     },
-    _compAdded:function(){
-       // console.log(compStore.getList()[compStore.getList().length-1]);
+    _compAdded: function () {
+        // console.log(compStore.getList()[compStore.getList().length-1]);
         this.setState({
-           composition:compStore.getList()[compStore.getList().length-1]
+            composition: compStore.getList()[compStore.getList().length - 1]
         })
     },
-    _compLoaded:function(){
-         this.setState({
-           composition:compStore.getComposition()
+    _compLoaded: function () {
+        this.setState({
+            composition: compStore.getComposition()
         })
         //  console.log(compStore.getComposition());
-       //   console.log(this.state.composition);
-          loadJSONHelper(compStore.getComposition().data)
+        //   console.log(this.state.composition);
+        loadJSONHelper(compStore.getComposition().data)
     },
     componentDidMount: function () {
-        compStore.on('compAdded',this._compAdded);
-        compStore.on('compLoaded',this._compLoaded);
-        var _this=this;
+        compStore.on('compAdded', this._compAdded);
+        compStore.on('compLoaded', this._compLoaded);
+        var _this = this;
         fabric.Object.prototype.set({
             transparentCorners: false,
             cornerColor: 'rgba(102,153,255,0.5)',
@@ -113,7 +114,7 @@ var CompositionEditor = React.createClass({
             padding: 5
         });
 
-    // initialize fabric canvas and assign to global windows object for debug
+        // initialize fabric canvas and assign to global windows object for debug
         var canvas = window._canvas = new fabric.Canvas('canvas');
         canvas.selectionColor = 'rgba(0,255,0,0.3)';
         var json = '{}';
@@ -121,12 +122,11 @@ var CompositionEditor = React.createClass({
             fabric.log(o, object);
         });
 
-        if(!this.props.query.id){
-        // compActions.addItem({ title:'new',data:'{}',duration:3600 });
-        }else{
-         compActions.getItem(this.props.query.id);  
+        if (!this.props.query.id) {
+            // compActions.addItem({ title:'new',data:'{}',duration:3600 });
+        } else {
+            compActions.getItem(this.props.query.id);
         }
-
 
 
         fabric.util.requestAnimFrame(function render() {
@@ -139,19 +139,18 @@ var CompositionEditor = React.createClass({
 
         });
 
-     
-       
+
         // create grid
         var grid = 15;
         var gridgroup = new fabric.Group([]);
-        _gridgroup=gridgroup;
+        _gridgroup = gridgroup;
         for (var i = 0; i < (720 / grid); i++) {
             gridgroup.add(new fabric.Line([i * grid, 0, i * grid, 480], {stroke: '#ccc', selectable: false}));
             gridgroup.add(new fabric.Line([0, i * grid, 720, i * grid], {stroke: '#ccc', selectable: false}))
         }
         canvas.add(gridgroup);
         context.init({preventDoubleContext: true});
-       
+
         // snap to grid
         canvas.on('object:moving', function (options) {
             options.target.set({
@@ -161,16 +160,14 @@ var CompositionEditor = React.createClass({
         });
 
 
-    
-         var json=this.state.composition.data;
-            //removeCanvasObj();
-            //var json = $('#canvasJSON').text();
-            try {
-                JSON.parse(json);
-            } catch (e) {
-               json= '{"objects":[],"background":""}' 
-            }
-        
+        var json = this.state.composition.data;
+        //removeCanvasObj();
+        //var json = $('#canvasJSON').text();
+        try {
+            JSON.parse(json);
+        } catch (e) {
+            json = '{"objects":[],"background":""}'
+        }
 
 
         canvas.on('object:selected', function (options) {
@@ -241,7 +238,7 @@ var CompositionEditor = React.createClass({
                         var imgInstance = new fabric.Image(img, {
                             left: event.pageX - $('#canvas').offset().left,
                             top: event.pageY - $('#canvas').offset().top,
-                            opacity: 0.85
+                            opacity: 0.95
                         });
                         canvas.add(imgInstance);
                         break;
@@ -259,7 +256,7 @@ var CompositionEditor = React.createClass({
                         videoInstance.getElement().play();
                         break;
 
-                        default:
+                    default:
                         break;
 
                 }
@@ -286,7 +283,7 @@ var CompositionEditor = React.createClass({
         }
 
 
-/*-------------------UI-control--------------------------*/
+        /*-------------------UI-control--------------------------*/
 
 
         function addHandler(id, fn, eventName) {
@@ -306,7 +303,7 @@ var CompositionEditor = React.createClass({
             setStyle(obj, 'fontWeight', isBold ? '' : 'bold');
         });
 
-        addHandler('italic', function () {
+        addHandler('italic', function (obj) {
             var isItalic = getStyle(obj, 'fontStyle') === 'italic';
             setStyle(obj, 'fontStyle', isItalic ? '' : 'italic');
         });
@@ -371,61 +368,65 @@ var CompositionEditor = React.createClass({
             try {
                 JSON.parse(json);
             } catch (e) {
-               json= '{"objects":[],"background":""}' 
+                json = '{"objects":[],"background":""}'
             }
-            canvas.loadFromJSON(json,function(){
-                 canvas.add(gridgroup);
-                 canvas.sendToBack(gridgroup);
-                 canvas.renderAll.bind(canvas);
-            }
-                , function (o, object) {
-                fabric.log(o, object);
-                if (object.type == "image" && object._element == null) {
-                    console.log(object);
-                    var vid = document.createElement('video');
-                    vid.src = object.src;
-                    vid.loop = true;
-                    vid.controls = true;
-                    object._element = vid;
-                    object._originalElement = vid;
-                   object.getElement().play();
+            canvas.loadFromJSON(json, function () {
+                    canvas.add(gridgroup);
+                    canvas.sendToBack(gridgroup);
+                    canvas.renderAll.bind(canvas);
                 }
-            });
+                , function (o, object) {
+                    fabric.log(o, object);
+                    if (object.type == "image" && object._element == null) {
+                        console.log(object);
+                        var vid = document.createElement('video');
+                        vid.src = object.src;
+                        vid.loop = true;
+                        vid.controls = true;
+                        object._element = vid;
+                        object._originalElement = vid;
+                        object.getElement().play();
+                    }
+                });
         });
-    
-   
-        $('#Save').click(function(event) {
+
+
+        $('#Save').click(function (event) {
             canvas.remove(gridgroup);
             var jsonString = JSON.stringify(canvas);
             $('#canvasJSON').text(jsonString);
             canvas.add(gridgroup);
             console.log(_this)
             canvas.sendToBack(gridgroup);
-            if(_this.state.composition.id==''){ 
-               _this.state.composition.data=jsonString;
-              compActions.addItem(_this.state.composition)  
-            }else{
-              _this.state.composition.data=jsonString;
-              compActions.editItem(_this.state.composition)
+            if (_this.state.composition.id == '') {
+                _this.state.composition.data = jsonString;
+                compActions.addItem(_this.state.composition)
+            } else {
+                _this.state.composition.data = jsonString;
+                compActions.editItem(_this.state.composition)
             }
-             
-           });
 
-        $('#setGrid').click(function(event) {
-          if(gridgroup.visible){
-                gridgroup.setVisible(false);
-          }else{
-                 gridgroup.setVisible(true); 
-          };
         });
 
-    },changeTitle:function(event){
-     this.state.composition.title=event.target.value;
-     this.setState({composition:this.state.composition})
+        $('#setGrid').click(function (event) {
+            if (gridgroup.visible) {
+                gridgroup.setVisible(false);
+            } else {
+                gridgroup.setVisible(true);
+            }
+            ;
+        });
+
+    }, changeTitle: function (event) {
+        this.state.composition.title = event.target.value;
+        this.setState({composition: this.state.composition})
     },
-     changeduration:function(event){
-      this.state.composition.duration=event.target.value;
-      this.setState({composition:this.state.composition})
+    changeduration: function (event) {
+        this.state.composition.duration = event.target.value;
+        this.setState({composition: this.state.composition})
+    },changeTextSize:function(event){
+        //this.state.textSize = event.target.value;
+        this.setState({textSize:event.target.value})
     },
     render: function () {
         return (
@@ -435,13 +436,15 @@ var CompositionEditor = React.createClass({
                 </div>
                 <div className="col-sm-9 col-sm-offset-3 main">
 
-                 composition title:  <input id="title" type='text' value={this.state.composition.title} onChange={this.changeTitle} />
-                  <p></p>
-                  duration(second):  <input id="duration" type='text' value={this.state.composition.duration} onChange={this.changeduration} />
-                  <p></p>
+                    composition title: <input id="title" type='text' value={this.state.composition.title}
+                                              onChange={this.changeTitle}/>
+                    <p></p>
+                    duration(second): <input id="duration" type='text' value={this.state.composition.duration}
+                                             onChange={this.changeduration}/>
+                    <p></p>
                     <div className="btn-toolbar" role="toolbar" aria-label="...">
-                            
-                            <div className="btn-group" role="group" aria-label="...">
+
+                        <div className="btn-group" role="group" aria-label="...">
                             <button type="button" className="btn btn-default" id="textbutton">text tool</button>
                             <button type="button" className="btn btn-default" id="loadJSON">loadJSON</button>
                             <button type="button" className="btn btn-default" id="outputJSON">outputJSON</button>
@@ -458,13 +461,14 @@ var CompositionEditor = React.createClass({
                         <button id="line-through">Line-through</button>
                         <input type="color" id="color"/>
                         <input type="color" id="bg-color"/>
-                        <input type="number" min="5" max="150" value="40" id="size" width="40"/>
+                        <input type="number" min="5" max="150" value={this.state.textSize} id="size" width="40" onChange={this.changeTextSize}/>
                     </p>
                     <canvas id="canvas" width="720" height="480" className="canvascontext">No Canvas.</canvas>
 
                     <figure className="highlight" width="720" height="180">
                         <p>CompositionJSON</p>
-                        <textarea id="canvasJSON" readonly="readonly" placeholder='{"objects":[],"background":""}' ></textarea>
+                        <textarea id="canvasJSON" readOnly="readOnly"
+                                  placeholder='{"objects":[],"background":""}'></textarea>
 
                     </figure>
                 </div>

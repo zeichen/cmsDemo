@@ -2,8 +2,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher');
 var appConstants = require('../constants/appConstants');
 
 var compActions = {
-    getList:function(){
-            AppDispatcher.handleAction({
+    getList: function () {
+        AppDispatcher.handleAction({
             actionType: appConstants.COMP_GETLIST,
             data: null
         });

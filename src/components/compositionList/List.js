@@ -16,9 +16,10 @@ var List = React.createClass({
     render: function () {
 
         var listItems = this.props.items.map(function (item, index) {
-         
+
             return (
-                <ListItem key={index} item={item} remove={this.props.remove.bind(null, item.id)} edit={this.props.edit.bind(null, item.id)}/>
+                <ListItem key={index} item={item} remove={this.props.remove.bind(null, item.id)}
+                          edit={this.props.edit.bind(null, item.id)}/>
             )
 
         }.bind(this));

@@ -3,10 +3,10 @@ var appConstants = require('../constants/appConstants');
 //var actionType = require('../constants/actionType');
 
 var eventActions = {
-    getEvent:function(){
-         AppDispatcher.handleAction({
+    getEvent: function () {
+        AppDispatcher.handleAction({
             actionType: appConstants.EVENT_INIT
-           // data: item
+            // data: item
         });
     },
     createEvent: function (item) {

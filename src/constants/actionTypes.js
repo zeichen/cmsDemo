@@ -3,10 +3,9 @@
 
 module.exports = {
     INITAILIZE: 'initialize',
-   EVENT_CREATE:'createEvent',
-   EVENT_UPDATE:'updateEvent',
-   EVENT_DELETE:'deleteEvent'
-
+    EVENT_CREATE: 'createEvent',
+    EVENT_UPDATE: 'updateEvent',
+    EVENT_DELETE: 'deleteEvent'
 
 
 };

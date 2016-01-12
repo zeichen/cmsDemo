@@ -13,7 +13,7 @@ var routes = (
         <Route name="comp" handler={require('./components/compositionList/ListContainer')}/>
         <Route name="scheduler" handler={require('./components/scheduler')}/>
         <Route name="editor" path="/editor" handler={require('./components/CompositionEditor')}>
-        <Route path="/editor/:id" handler={require('./components/CompositionEditor')}/>
+            <Route path="/editor/:id" handler={require('./components/CompositionEditor')}/>
         </Route>
         <NotFoundRoute handler={require('./components/common/notFoundPage')}/>
 

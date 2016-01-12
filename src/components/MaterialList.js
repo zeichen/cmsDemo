@@ -1,6 +1,6 @@
 'use strict';
 var React = require('react');
-var materialStore=require('../stores/materialStore')
+var materialStore = require('../stores/materialStore')
 
 
 var TreeNode = React.createClass({
@@ -18,8 +18,8 @@ var TreeNode = React.createClass({
                     $(this).html(elObject.name);
                 },
                 zIndex: 999,
-                revert: true,      
-                revertDuration: 0 
+                revert: true,
+                revertDuration: 0
             });
         }
 
@@ -59,7 +59,7 @@ var TreeNode = React.createClass({
 
         var style;
         if (!this.state.visible) {
-            style = {display: "none"};    
+            style = {display: "none"};
         }
 
         return (
@@ -80,9 +80,9 @@ var TreeNode = React.createClass({
 });
 
 var MaterialList = React.createClass({
-     getInitialState: function () {
+    getInitialState: function () {
         return {
-            tree:materialStore.getList()
+            tree: materialStore.getList()
         };
     },
     componentDidMount: function () {
@@ -91,8 +91,8 @@ var MaterialList = React.createClass({
     componentWillUnmount: function () {
         materialStore.removeChangeListener(this._onChange);
     },
-    _onChange:function(){
-      this.setState({
+    _onChange: function () {
+        this.setState({
             list: materialStore.getList()
         });
     },
@@ -101,7 +101,7 @@ var MaterialList = React.createClass({
             <div>
 
                 <TreeNode node={this.state.tree}/>
-               
+
             </div>
         );
     }
